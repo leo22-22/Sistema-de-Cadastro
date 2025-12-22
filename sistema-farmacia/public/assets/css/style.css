@@ -1,0 +1,126 @@
+:root {
+    --primary-blue: #0061ff;
+    --dark-blue: #002b5c;
+    --accent-blue: #60efff;
+    --bg-light: #f8faff;
+    --glass-white: rgba(255, 255, 255, 0.9);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #334155;
+}
+
+.header-section {
+    background: rgba(15, 23, 42, 0.8) !important; 
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-link {
+    position: relative;
+    transition: var(--transition);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 5px;
+    left: 50%;
+    background: var(--accent-blue);
+    transition: var(--transition);
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+    width: 70%;
+}
+
+.nav-link:hover {
+    color: var(--accent-blue) !important;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(45deg, var(--primary-blue), var(--accent-blue)) !important;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 97, 255, 0.3);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, var(--primary-blue), #0045b5);
+    border: none;
+    padding: 12px 30px;
+    box-shadow: 0 10px 20px rgba(0, 97, 255, 0.2);
+    transition: var(--transition);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(0, 97, 255, 0.3);
+}
+
+.bg-light.rounded.shadow-sm {
+    background: white !important;
+    border: 1px solid rgba(0, 97, 255, 0.1) !important;
+    transition: var(--transition);
+}
+
+.bg-light.rounded.shadow-sm:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05) !important;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #00b09b, #96c93d); 
+}
+
+.card {
+    transition: var(--transition);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card i {
+    display: inline-block;
+    transition: var(--transition);
+}
+
+.card:hover i {
+    transform: rotate(-10deg) scale(1.2);
+}
+
+.text-primary { color: var(--primary-blue) !important; }
+.text-danger { color: #ef4444 !important; }
+.text-warning { color: #f59e0b !important; }
+
+footer {
+    background: white !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+
+footer strong {
+    color: var(--primary-blue);
+    letter-spacing: 1px;
+}
+
+footer a:hover {
+    color: var(--primary-blue) !important;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+main {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
