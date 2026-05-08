@@ -1,0 +1,201 @@
+<x-app-layout>
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-person me-2"></i>{{ $paciente->nome }}</h4>
+        <div class="d-flex gap-2 flex-wrap">
+            @if($paciente->prontuario)<span class="badge bg-secondary">Prontuário: {{ $paciente->prontuario }}</span>@endif
+            @if($paciente->cns)<span class="badge bg-info text-dark">CNS: {{ $paciente->cns }}</span>@endif
+            <span class="badge {{ $paciente->ativo ? 'bg-success' : 'bg-secondary' }}">{{ $paciente->ativo ? 'Ativo' : 'Inativo' }}</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('processos.create', ['paciente_id' => $paciente->id]) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-folder-plus me-1"></i>Novo Processo
+        </a>
+        <a href="{{ route('pacientes.edit', $paciente) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil me-1"></i>Editar
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    {{-- Coluna esquerda: dados --}}
+    <div class="col-lg-4">
+
+        {{-- Dados pessoais --}}
+        <div class="card p-4 mb-3">
+            <h6 class="section-title">Dados Pessoais</h6>
+            <dl class="row mb-0 small">
+                <dt class="col-5 text-muted">Nome da Mãe</dt>
+                <dd class="col-7">{{ $paciente->nome_mae ?? '—' }}</dd>
+
+                <dt class="col-5 text-muted">Data Nasc.</dt>
+                <dd class="col-7">
+                    {{ $paciente->data_nascimento ? $paciente->data_nascimento->format('d/m/Y') : '—' }}
+                    @if($paciente->idade) <span class="text-muted">({{ $paciente->idade }} anos)</span> @endif
+                </dd>
+
+                <dt class="col-5 text-muted">CPF</dt>
+                <dd class="col-7">{{ $paciente->cpf ?? '—' }}</dd>
+
+                <dt class="col-5 text-muted">RG</dt>
+                <dd class="col-7">{{ $paciente->rg ?? '—' }}</dd>
+
+                <dt class="col-5 text-muted">CNS</dt>
+                <dd class="col-7">{{ $paciente->cns ?? '—' }}</dd>
+
+                <dt class="col-5 text-muted">Raça/Cor</dt>
+                <dd class="col-7">{{ \App\Models\Paciente::$racaCorLabels[$paciente->raca_cor] ?? '—' }}</dd>
+
+                <dt class="col-5 text-muted">Peso</dt>
+                <dd class="col-7">{{ $paciente->peso ? $paciente->peso . ' kg' : '—' }}</dd>
+
+                <dt class="col-5 text-muted">Altura</dt>
+                <dd class="col-7">{{ $paciente->altura ? $paciente->altura . ' cm' : '—' }}</dd>
+
+                <dt class="col-5 text-muted">Telefone</dt>
+                <dd class="col-7">{{ $paciente->telefone ?? '—' }}</dd>
+
+                <dt class="col-5 text-muted">E-mail</dt>
+                <dd class="col-7">{{ $paciente->email ?? '—' }}</dd>
+            </dl>
+        </div>
+
+        {{-- Endereço --}}
+        <div class="card p-4 mb-3">
+            <h6 class="section-title">Endereço</h6>
+            @if($paciente->logradouro || $paciente->cidade)
+                <p class="small mb-1">
+                    {{ $paciente->logradouro }}
+                    @if($paciente->numero_endereco), nº {{ $paciente->numero_endereco }}@endif
+                    @if($paciente->complemento) — {{ $paciente->complemento }}@endif
+                </p>
+                @if($paciente->bairro)<p class="small mb-1 text-muted">{{ $paciente->bairro }}</p>@endif
+                <p class="small mb-1">{{ $paciente->cidade }}@if($paciente->uf)/{{ $paciente->uf }}@endif</p>
+                @if($paciente->cep)<p class="small mb-0 text-muted">CEP: {{ $paciente->cep }}</p>@endif
+            @else
+                <p class="text-muted small mb-0">Endereço não informado.</p>
+            @endif
+        </div>
+
+        {{-- Declaração autorizadora / Representantes --}}
+        <div class="card p-4">
+            <h6 class="section-title">
+                Declaração Autorizadora
+                @if($paciente->sem_representante)
+                    <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">Sem representante</span>
+                @endif
+            </h6>
+
+            @if($paciente->sem_representante)
+                <p class="small text-muted mb-2">Paciente declarou não querer representantes.</p>
+            @endif
+
+            @forelse($paciente->representantes as $rep)
+            <div class="d-flex justify-content-between align-items-start mb-3 pb-2 border-bottom">
+                <div>
+                    <span class="badge bg-secondary me-1" style="font-size:.65rem">{{ $loop->iteration }}º</span>
+                    <strong class="small">{{ $rep->nome }}</strong><br>
+                    @if($rep->cpf)<small class="text-muted">CPF: {{ $rep->cpf }}</small><br>@endif
+                    @if($rep->telefone)<small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ $rep->telefone }}</small>@endif
+                </div>
+                <form action="{{ route('pacientes.desvincularRepresentante', [$paciente, $rep]) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-sm btn-outline-danger" title="Desvincular"><i class="bi bi-x"></i></button>
+                </form>
+            </div>
+            @empty
+            <p class="text-muted small">Nenhum representante vinculado.</p>
+            @endforelse
+
+            @if(!$paciente->sem_representante && $paciente->representantes->count() < 3)
+            <form action="{{ route('pacientes.vincularRepresentante', $paciente) }}" method="POST" class="mt-2">
+                @csrf
+                <label class="form-label small fw-semibold text-muted">Vincular Representante</label>
+                <div class="input-group input-group-sm">
+                    <select name="representante_id" class="form-select" required>
+                        <option value="">Selecionar...</option>
+                        @foreach($representantesDisponiveis->whereNotIn('id', $paciente->representantes->pluck('id')) as $r)
+                        <option value="{{ $r->id }}">{{ $r->nome }}{{ $r->cpf ? ' (' . $r->cpf . ')' : '' }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-outline-primary">Vincular</button>
+                </div>
+            </form>
+            @endif
+        </div>
+    </div>
+
+    {{-- Coluna direita: processos --}}
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h6 class="mb-0 fw-bold">Processos ({{ $paciente->processos->count() }})</h6>
+                <a href="{{ route('processos.create', ['paciente_id' => $paciente->id]) }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Novo
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-3">Número</th>
+                            <th>CID / Doença</th>
+                            <th>Tipo</th>
+                            <th>Abertura</th>
+                            <th class="text-center">APAC</th>
+                            <th class="text-center">Status</th>
+                            <th class="pe-3 text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($paciente->processos as $proc)
+                        <tr>
+                            <td class="ps-3 fw-bold">{{ $proc->numero }}</td>
+                            <td>
+                                @if($proc->cid10)
+                                <span class="badge bg-light text-dark border">{{ $proc->cid10->codigo }}</span>
+                                <br><small class="text-muted">{{ Str::limit($proc->cid10->nome, 30) }}</small>
+                                @else —
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border" style="font-size:.7rem">
+                                    {{ \App\Models\Processo::$tiposProcesso[$proc->tipo_processo] ?? $proc->tipo_processo }}
+                                </span>
+                            </td>
+                            <td class="small text-muted">{{ $proc->created_at->format('d/m/Y') }}</td>
+                            <td class="text-center small">
+                                @if($proc->validade_apac)
+                                    @if($proc->validade_apac->isPast())
+                                        <span class="text-danger fw-bold">{{ $proc->validade_apac->format('d/m/Y') }}<br><small>VENCIDA</small></span>
+                                    @else
+                                        <span class="text-success">{{ $proc->validade_apac->format('d/m/Y') }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <span class="badge {{ $proc->statusBadgeClass() }}">{{ $proc->statusLabel() }}</span>
+                            </td>
+                            <td class="pe-3 text-end">
+                                <a href="{{ route('processos.show', $proc) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="7" class="text-center text-muted py-4">Nenhum processo cadastrado.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('styles')
+<style>.section-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#64748b; margin-bottom:.75rem; }</style>
+@endpush
+</x-app-layout>
