@@ -30,14 +30,14 @@ class MedicoPrescritController extends Controller
     {
         $data = $request->validate([
             'nome'           => 'required|string|max:255',
-            'crm'            => 'nullable|string|max:20',
-            'cns'            => 'nullable|string|max:15',
-            'cnes'           => 'nullable|string|max:10',
+            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm',
+            'cns'            => 'nullable|string|max:19|unique:medicos_prescritores,cns',
+            'cnes'           => 'nullable|string|max:7',
             'estabelecimento'=> 'nullable|string|max:255',
             'especialidade'  => 'nullable|string|max:100',
-            'telefone'       => 'nullable|string|max:20',
+            'telefone'       => 'nullable|string|max:15',
             'cidade'         => 'nullable|string|max:100',
-            'uf'             => 'nullable|string|max:2',
+            'uf'             => 'nullable|string|size:2',
         ]);
 
         MedicoPrescritor::create([...$data, 'ativo' => true]);
@@ -60,14 +60,14 @@ class MedicoPrescritController extends Controller
     {
         $data = $request->validate([
             'nome'           => 'required|string|max:255',
-            'crm'            => 'nullable|string|max:20',
-            'cns'            => 'nullable|string|max:15',
-            'cnes'           => 'nullable|string|max:10',
+            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm,' . $medico->id,
+            'cns'            => 'nullable|string|max:19|unique:medicos_prescritores,cns,' . $medico->id,
+            'cnes'           => 'nullable|string|max:7',
             'estabelecimento'=> 'nullable|string|max:255',
             'especialidade'  => 'nullable|string|max:100',
-            'telefone'       => 'nullable|string|max:20',
+            'telefone'       => 'nullable|string|max:15',
             'cidade'         => 'nullable|string|max:100',
-            'uf'             => 'nullable|string|max:2',
+            'uf'             => 'nullable|string|size:2',
             'ativo'          => 'boolean',
         ]);
 

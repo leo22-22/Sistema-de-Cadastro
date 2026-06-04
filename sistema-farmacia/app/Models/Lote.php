@@ -10,6 +10,7 @@ class Lote extends Model
     use HasFactory;
 
     protected $fillable = [
+        'farmacia_id',
         'medicamento_id', 'lote', 'validade',
         'quantidade_inicial', 'quantidade_atual',
         'data_entrada', 'observacoes',
@@ -21,6 +22,11 @@ class Lote extends Model
             'validade'     => 'date',
             'data_entrada' => 'date',
         ];
+    }
+
+    public function farmacia()
+    {
+        return $this->belongsTo(Farmacia::class);
     }
 
     public function medicamento()

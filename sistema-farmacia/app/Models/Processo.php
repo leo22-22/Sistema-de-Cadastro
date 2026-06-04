@@ -10,6 +10,7 @@ class Processo extends Model
     use HasFactory;
 
     protected $fillable = [
+        'farmacia_id',
         'numero', 'tipo_processo',
         'paciente_id', 'cid10_id', 'medico_prescritor_id',
         'tipo_receita_id', 'tipo_relacao_remessa_id',
@@ -47,6 +48,11 @@ class Processo extends Model
         $ano = now()->year;
         $ultimo = static::whereYear('created_at', $ano)->count() + 1;
         return sprintf('PROC-%d-%04d', $ano, $ultimo);
+    }
+
+    public function farmacia()
+    {
+        return $this->belongsTo(Farmacia::class);
     }
 
     public function paciente()

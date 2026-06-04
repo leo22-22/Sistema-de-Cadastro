@@ -41,10 +41,10 @@ class LoteController extends Controller
     {
         $data = $request->validate([
             'medicamento_id'    => 'required|exists:medicamentos,id',
-            'lote'              => 'required|string|max:50',
+            'lote'              => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $request->medicamento_id)],
             'validade'          => 'required|date|after:today',
             'quantidade_inicial'=> 'required|integer|min:1',
-            'data_entrada'      => 'required|date',
+            'data_entrada'      => 'required|date|before_or_equal:today',
             'observacoes'       => 'nullable|string',
         ]);
 
@@ -71,8 +71,8 @@ class LoteController extends Controller
     public function update(Request $request, Lote $lote)
     {
         $data = $request->validate([
-            'lote'          => 'required|string|max:50',
-            'validade'      => 'required|date',
+            'lote'          => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $lote->medicamento_id)->ignore($lote->id)],
+            'validade'      => 'required|date|after_or_equal:today',
             'observacoes'   => 'nullable|string',
         ]);
 

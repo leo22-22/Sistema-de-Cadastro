@@ -38,8 +38,8 @@ class RepresentanteController extends Controller
             'complemento'     => ['nullable', 'string', 'max:100'],
             'bairro'          => ['nullable', 'string', 'max:100'],
             'cidade'          => ['nullable', 'string', 'max:100'],
-            'uf'              => ['nullable', 'string', 'max:2'],
-            'cep'             => ['nullable', 'string', 'max:9'],
+            'uf'              => ['nullable', 'string', 'size:2'],
+            'cep'             => ['nullable', 'string', 'max:10'],
             'observacoes'     => ['nullable', 'string'],
         ]);
 
@@ -71,8 +71,8 @@ class RepresentanteController extends Controller
             'complemento'     => ['nullable', 'string', 'max:100'],
             'bairro'          => ['nullable', 'string', 'max:100'],
             'cidade'          => ['nullable', 'string', 'max:100'],
-            'uf'              => ['nullable', 'string', 'max:2'],
-            'cep'             => ['nullable', 'string', 'max:9'],
+            'uf'              => ['nullable', 'string', 'size:2'],
+            'cep'             => ['nullable', 'string', 'max:10'],
             'observacoes'     => ['nullable', 'string'],
             'ativo'           => ['boolean'],
         ]);

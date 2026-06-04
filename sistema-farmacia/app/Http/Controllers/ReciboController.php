@@ -48,14 +48,20 @@ class ReciboController extends Controller
 
     public function store(Request $request, Processo $processo)
     {
+        $medicamentosDoProcesso = $processo->medicamentos->pluck('id')->toArray();
+
         $request->validate([
-            'medicamento_id'          => ['required', 'exists:medicamentos,id'],
-            'lote_id'                 => ['nullable', 'exists:lotes,id'],
-            'mes_referencia'          => ['required', 'date'],
-            'quantidade'              => ['required', 'integer', 'min:1'],
+            'medicamento_id'             => ['required', 'exists:medicamentos,id', \Illuminate\Validation\Rule::in($medicamentosDoProcesso)],
+            'lote_id'                    => ['nullable', 'exists:lotes,id'],
+            'mes_referencia'             => ['required', 'date', 'before_or_equal:today'],
+            'quantidade'                 => ['required', 'integer', 'min:1'],
             'retirado_por_representante' => ['boolean'],
-            'representante_id'        => ['nullable', 'exists:representantes,id'],
-            'observacoes'             => ['nullable', 'string'],
+            'representante_id'           => ['required_if:retirado_por_representante,1', 'nullable', 'exists:representantes,id'],
+            'observacoes'                => ['nullable', 'string'],
+        ], [
+            'medicamento_id.in'              => 'O medicamento selecionado não pertence a este processo.',
+            'representante_id.required_if'  => 'Informe o representante que está retirando.',
+            'mes_referencia.before_or_equal' => 'O mês de referência não pode ser no futuro.',
         ]);
 
         $lote = $request->lote_id ? Lote::find($request->lote_id) : null;
