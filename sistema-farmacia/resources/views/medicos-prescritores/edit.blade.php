@@ -28,13 +28,13 @@
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">CNS</label>
                     <input type="text" name="cns" class="form-control @error('cns') is-invalid @enderror"
-                           value="{{ old('cns', $medico->cns) }}" maxlength="15">
+                           value="{{ old('cns', $medico->cns) }}" placeholder="000 0000 0000 0000" data-mask="cns" maxlength="19">
                     @error('cns')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">CNES</label>
                     <input type="text" name="cnes" class="form-control @error('cnes') is-invalid @enderror"
-                           value="{{ old('cnes', $medico->cnes) }}">
+                           value="{{ old('cnes', $medico->cnes) }}" placeholder="0000000" data-mask="cnes" maxlength="7">
                     @error('cnes')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-8">
@@ -50,7 +50,7 @@
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Telefone</label>
                     <input type="text" name="telefone" class="form-control"
-                           value="{{ old('telefone', $medico->telefone) }}">
+                           value="{{ old('telefone', $medico->telefone) }}" placeholder="(00) 00000-0000" data-mask="telefone" maxlength="15">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Cidade</label>

@@ -444,5 +444,37 @@ function sbToggle() {
 })();
 </script>
 @stack('scripts')
+<script>
+(function () {
+    function fmt(v, pattern) {
+        var d = v.replace(/\D/g, ''), r = '', di = 0;
+        for (var i = 0; i < pattern.length && di < d.length; i++) {
+            r += pattern[i] === '0' ? d[di++] : pattern[i];
+        }
+        return r;
+    }
+    function fmtTelefone(v) {
+        var d = v.replace(/\D/g, '').slice(0, 11);
+        if (d.length <= 10) return fmt(d, '(00) 0000-0000');
+        return fmt(d, '(00) 00000-0000');
+    }
+    var patterns = {
+        cpf:      function(v){ return fmt(v, '000.000.000-00'); },
+        cnpj:     function(v){ return fmt(v, '00.000.000/0000-00'); },
+        cns:      function(v){ return fmt(v, '000 0000 0000 0000'); },
+        cnes:     function(v){ return v.replace(/\D/g,'').slice(0,7); },
+        cep:      function(v){ return fmt(v, '00000-000'); },
+        telefone: fmtTelefone,
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-mask]').forEach(function (el) {
+            var fn = patterns[el.dataset.mask];
+            if (!fn) return;
+            if (el.value) el.value = fn(el.value);
+            el.addEventListener('input', function () { el.value = fn(el.value); });
+        });
+    });
+})();
+</script>
 </body>
 </html>

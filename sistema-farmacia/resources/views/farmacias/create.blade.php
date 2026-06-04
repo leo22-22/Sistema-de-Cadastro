@@ -18,13 +18,13 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">CNPJ</label>
                             <input type="text" name="cnpj" class="form-control @error('cnpj') is-invalid @enderror"
-                                   value="{{ old('cnpj') }}" placeholder="00.000.000/0000-00">
+                                   value="{{ old('cnpj') }}" placeholder="00.000.000/0000-00" data-mask="cnpj" maxlength="18">
                             @error('cnpj')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">CNES</label>
                             <input type="text" name="cnes" class="form-control @error('cnes') is-invalid @enderror"
-                                   value="{{ old('cnes') }}">
+                                   value="{{ old('cnes') }}" placeholder="0000000" data-mask="cnes" maxlength="7">
                             @error('cnes')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-8">
@@ -54,7 +54,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Telefone</label>
                             <input type="text" name="telefone" class="form-control @error('telefone') is-invalid @enderror"
-                                   value="{{ old('telefone') }}">
+                                   value="{{ old('telefone') }}" placeholder="(00) 00000-0000" data-mask="telefone" maxlength="15">
                             @error('telefone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">

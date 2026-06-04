@@ -46,7 +46,7 @@
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">CPF</label>
                     <input type="text" name="cpf" class="form-control @error('cpf') is-invalid @enderror"
-                           value="{{ old('cpf', $paciente->cpf) }}" placeholder="000.000.000-00">
+                           value="{{ old('cpf', $paciente->cpf) }}" placeholder="000.000.000-00" data-mask="cpf" maxlength="14">
                     @error('cpf')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
@@ -57,7 +57,7 @@
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">CNS (Cartão SUS)</label>
                     <input type="text" name="cns" class="form-control @error('cns') is-invalid @enderror"
-                           value="{{ old('cns', $paciente->cns) }}" maxlength="15">
+                           value="{{ old('cns', $paciente->cns) }}" placeholder="000 0000 0000 0000" data-mask="cns" maxlength="19">
                     @error('cns')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-3">
@@ -73,7 +73,7 @@
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Telefone</label>
                     <input type="text" name="telefone" class="form-control"
-                           value="{{ old('telefone', $paciente->telefone) }}">
+                           value="{{ old('telefone', $paciente->telefone) }}" placeholder="(00) 00000-0000" data-mask="telefone" maxlength="15">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">E-mail</label>
@@ -89,7 +89,7 @@
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">CEP</label>
                     <input type="text" name="cep" id="cep" class="form-control"
-                           value="{{ old('cep', $paciente->cep) }}" maxlength="9">
+                           value="{{ old('cep', $paciente->cep) }}" placeholder="00000-000" data-mask="cep" maxlength="9">
                 </div>
                 <div class="col-md-8">
                     <label class="form-label fw-semibold">Logradouro</label>
