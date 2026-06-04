@@ -13,6 +13,7 @@
                     <tr>
                         <th class="ps-3">Nome</th>
                         <th>E-mail</th>
+                        <th>Farmácia</th>
                         <th class="text-center">Perfil</th>
                         <th class="text-center">Status</th>
                         <th class="pe-3 text-end">Ações</th>
@@ -23,10 +24,21 @@
                     <tr>
                         <td class="ps-3 fw-bold">{{ $usuario->name }}</td>
                         <td class="text-muted">{{ $usuario->email }}</td>
+                        <td class="text-muted">{{ $usuario->farmacia?->nome ?? '—' }}</td>
                         <td class="text-center">
-                            <span class="badge {{ $usuario->isSuperadmin() ? 'badge-superadmin' : 'badge-funcionario' }}">
-                                {{ $usuario->isSuperadmin() ? 'Superadmin' : 'Funcionário' }}
-                            </span>
+                            @php
+                                $badgeClass = match($usuario->role) {
+                                    'superadmin'     => 'bg-danger',
+                                    'admin_farmacia' => 'bg-warning text-dark',
+                                    default          => 'bg-secondary',
+                                };
+                                $badgeLabel = match($usuario->role) {
+                                    'superadmin'     => 'Superadmin',
+                                    'admin_farmacia' => 'Admin Farmácia',
+                                    default          => 'Funcionário',
+                                };
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
                         </td>
                         <td class="text-center">
                             <span class="badge {{ $usuario->active ? 'bg-success' : 'bg-secondary' }}">
@@ -47,7 +59,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="text-center text-muted py-4">Nenhum usuário encontrado.</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted py-4">Nenhum usuário encontrado.</td></tr>
                     @endforelse
                 </tbody>
             </table>

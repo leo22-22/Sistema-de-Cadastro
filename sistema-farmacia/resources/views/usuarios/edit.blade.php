@@ -23,14 +23,31 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Perfil *</label>
                         <select name="role" class="form-select" required>
-                            <option value="funcionario" {{ $usuario->role === 'funcionario' ? 'selected' : '' }}>Funcionário</option>
-                            <option value="superadmin" {{ $usuario->role === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                            <option value="funcionario" {{ old('role', $usuario->role) === 'funcionario' ? 'selected' : '' }}>Funcionário</option>
+                            <option value="admin_farmacia" {{ old('role', $usuario->role) === 'admin_farmacia' ? 'selected' : '' }}>Admin Farmácia</option>
+                            @if(auth()->user()->isSuperadmin())
+                            <option value="superadmin" {{ old('role', $usuario->role) === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                            @endif
                         </select>
                     </div>
+                    @if(auth()->user()->isSuperadmin())
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Farmácia</label>
+                        <select name="farmacia_id" class="form-select @error('farmacia_id') is-invalid @enderror">
+                            <option value="">— Nenhuma (superadmin de plataforma) —</option>
+                            @foreach($farmacias as $f)
+                            <option value="{{ $f->id }}" {{ old('farmacia_id', $usuario->farmacia_id) == $f->id ? 'selected' : '' }}>
+                                {{ $f->nome }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('farmacia_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    @endif
                     <div class="mb-3">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="active" value="1" id="active"
-                                   {{ $usuario->active ? 'checked' : '' }}>
+                                   {{ old('active', $usuario->active) ? 'checked' : '' }}>
                             <label class="form-check-label" for="active">Usuário ativo</label>
                         </div>
                     </div>

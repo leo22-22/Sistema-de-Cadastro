@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FarmaciaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PacienteController;
@@ -23,15 +24,28 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', function () {
+        $user = auth()->user();
+
+        $processoQuery = Processo::query();
+        $reciboQuery   = Recibo::query();
+        $resenteQuery  = Processo::with(['paciente', 'cid10', 'criadoPor']);
+        $apacQuery     = Processo::with('paciente');
+
+        if (!$user->isSuperadmin() && $user->farmacia_id) {
+            $processoQuery->where('farmacia_id', $user->farmacia_id);
+            $reciboQuery->whereHas('processo', fn($q) => $q->where('farmacia_id', $user->farmacia_id));
+            $resenteQuery->where('farmacia_id', $user->farmacia_id);
+            $apacQuery->where('farmacia_id', $user->farmacia_id);
+        }
+
         $totalPacientes        = Paciente::ativo()->count();
-        $totalProcessos        = Processo::count();
-        $processosAbertos      = Processo::where('status', 'aberto')->count();
-        $processosEmAndamento  = Processo::where('status', 'em_andamento')->count();
-        $processosConcluidos   = Processo::where('status', 'concluido')->count();
-        $totalRecibos          = Recibo::count();
-        $recentes              = Processo::with(['paciente', 'cid10', 'criadoPor'])
-            ->latest()->take(8)->get();
-        $apacAlerta            = Processo::with('paciente')
+        $totalProcessos        = $processoQuery->count();
+        $processosAbertos      = (clone $processoQuery)->where('status', 'aberto')->count();
+        $processosEmAndamento  = (clone $processoQuery)->where('status', 'em_andamento')->count();
+        $processosConcluidos   = (clone $processoQuery)->where('status', 'concluido')->count();
+        $totalRecibos          = $reciboQuery->count();
+        $recentes              = $resenteQuery->latest()->take(8)->get();
+        $apacAlerta            = $apacQuery
             ->whereNotNull('validade_apac')
             ->whereIn('status', ['aberto', 'em_andamento'])
             ->where('validade_apac', '<=', now()->addDays(30))
@@ -94,9 +108,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'lotes.destroy',
     ]);
 
-    // Área restrita ao Superadmin
-    Route::middleware('superadmin')->group(function () {
+    // Gestão de usuários — superadmin vê todos, admin_farmacia vê só os seus
+    Route::middleware('admin_farmacia')->group(function () {
         Route::resource('usuarios', UserController::class)->except(['show']);
+    });
+
+    // Área restrita ao Superadmin (plataforma)
+    Route::middleware('superadmin')->group(function () {
+        Route::resource('farmacias', FarmaciaController::class)->except(['show']);
         Route::resource('medicamentos', MedicamentoController::class);
         Route::resource('tipos-receita', TipoReceitaController::class)->names([
             'index'   => 'tipos-receita.index',

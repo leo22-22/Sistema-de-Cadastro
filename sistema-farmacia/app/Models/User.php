@@ -17,6 +17,7 @@ class User extends Authenticatable
         'password',
         'role',
         'active',
+        'farmacia_id',
     ];
 
     protected $hidden = [
@@ -28,14 +29,34 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'active' => 'boolean',
+            'password'          => 'hashed',
+            'active'            => 'boolean',
         ];
     }
 
     public function isSuperadmin(): bool
     {
         return $this->role === 'superadmin';
+    }
+
+    public function isAdminFarmacia(): bool
+    {
+        return $this->role === 'admin_farmacia';
+    }
+
+    public function isFuncionario(): bool
+    {
+        return $this->role === 'funcionario';
+    }
+
+    public function podeGerenciarUsuarios(): bool
+    {
+        return $this->isSuperadmin() || $this->isAdminFarmacia();
+    }
+
+    public function farmacia()
+    {
+        return $this->belongsTo(Farmacia::class);
     }
 
     public function processos()

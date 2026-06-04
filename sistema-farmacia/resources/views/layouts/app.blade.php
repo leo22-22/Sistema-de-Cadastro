@@ -353,8 +353,18 @@
             <i class="bi bi-box-seam"></i>Lotes
         </a>
 
-        @if(auth()->user()->isSuperadmin())
+        @if(auth()->user()->podeGerenciarUsuarios())
         <div class="sb-section">Administração</div>
+        <a href="{{ route('usuarios.index') }}" class="sb-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+            <i class="bi bi-people-fill"></i>Usuários
+        </a>
+        @endif
+
+        @if(auth()->user()->isSuperadmin())
+        <div class="sb-section">Plataforma</div>
+        <a href="{{ route('farmacias.index') }}" class="sb-link {{ request()->routeIs('farmacias.*') ? 'active' : '' }}">
+            <i class="bi bi-hospital"></i>Farmácias
+        </a>
         <a href="{{ route('medicamentos.index') }}" class="sb-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}">
             <i class="bi bi-capsule"></i>Medicamentos
         </a>
@@ -364,9 +374,6 @@
         <a href="{{ route('tipos-relacao-remessa.index') }}" class="sb-link {{ request()->routeIs('tipos-relacao-remessa.*') ? 'active' : '' }}">
             <i class="bi bi-truck"></i>Tipos de Remessa
         </a>
-        <a href="{{ route('usuarios.index') }}" class="sb-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
-            <i class="bi bi-people-fill"></i>Usuários
-        </a>
         @endif
     </nav>
 
@@ -374,7 +381,13 @@
         <div class="sb-avatar"><i class="bi bi-person-fill"></i></div>
         <div class="sb-user-info">
             <div class="sb-user-name">{{ auth()->user()->name }}</div>
-            <div class="sb-user-role">{{ auth()->user()->isSuperadmin() ? 'Superadmin' : 'Funcionário' }}</div>
+            <div class="sb-user-role">
+                {{ match(auth()->user()->role) {
+                    'superadmin'     => 'Superadmin',
+                    'admin_farmacia' => 'Admin Farmácia',
+                    default          => 'Funcionário',
+                } }}
+            </div>
         </div>
         <div class="sb-user-actions">
             <a href="{{ route('profile.edit') }}" title="Perfil"><i class="bi bi-gear"></i></a>

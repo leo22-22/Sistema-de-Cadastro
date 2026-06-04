@@ -8,9 +8,18 @@ use Illuminate\Http\Request;
 
 class LoteController extends Controller
 {
+    private function escopoFarmacia($query)
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin() && $user->farmacia_id) {
+            $query->where('farmacia_id', $user->farmacia_id);
+        }
+        return $query;
+    }
+
     public function index(Request $request)
     {
-        $query = Lote::with('medicamento');
+        $query = $this->escopoFarmacia(Lote::with('medicamento'));
         if ($request->filled('medicamento_id')) {
             $query->where('medicamento_id', $request->medicamento_id);
         }
@@ -40,6 +49,7 @@ class LoteController extends Controller
         ]);
 
         $data['quantidade_atual'] = $data['quantidade_inicial'];
+        $data['farmacia_id'] = auth()->user()->farmacia_id;
         Lote::create($data);
 
         return redirect()->route('lotes.index')

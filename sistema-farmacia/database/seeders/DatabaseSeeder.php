@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Cid10;
+use App\Models\Farmacia;
 use App\Models\Medicamento;
 use App\Models\TipoReceita;
 use App\Models\TipoRelacaoRemessa;
@@ -23,20 +24,41 @@ class DatabaseSeeder extends Seeder
 
     private function seedUsuarios(): void
     {
-        User::create([
-            'name'     => 'Farmácia Municipal',
-            'email'    => 'farmacia@sistema.com',
-            'password' => Hash::make('farmacia123'),
-            'role'     => 'superadmin',
-            'active'   => true,
+        // Superadmin da plataforma (sem farmácia vinculada)
+        User::firstOrCreate(['email' => 'leonardoranuci17@gmail.com'], [
+            'name'        => 'Leonardo',
+            'password'    => Hash::make('admin@123'),
+            'role'        => 'superadmin',
+            'active'      => true,
+            'farmacia_id' => null,
         ]);
 
-        User::create([
-            'name'     => 'Atendente Padrão',
-            'email'    => 'atendente@sistema.com',
-            'password' => Hash::make('atendente123'),
-            'role'     => 'funcionario',
-            'active'   => true,
+        // Farmácia de exemplo
+        $farmaciaExemplo = Farmacia::firstOrCreate(['nome' => 'Farmácia Municipal Central'], [
+            'cnpj'        => null,
+            'cnes'        => null,
+            'responsavel' => 'Farmacêutico Responsável',
+            'cidade'      => 'Sua Cidade',
+            'estado'      => 'SP',
+            'ativo'       => true,
+        ]);
+
+        // Admin da farmácia de exemplo
+        User::firstOrCreate(['email' => 'farmacia@sistema.com'], [
+            'name'        => 'Farmácia Municipal',
+            'password'    => Hash::make('farmacia123'),
+            'role'        => 'admin_farmacia',
+            'active'      => true,
+            'farmacia_id' => $farmaciaExemplo->id,
+        ]);
+
+        // Funcionário de exemplo
+        User::firstOrCreate(['email' => 'atendente@sistema.com'], [
+            'name'        => 'Atendente Padrão',
+            'password'    => Hash::make('atendente123'),
+            'role'        => 'funcionario',
+            'active'      => true,
+            'farmacia_id' => $farmaciaExemplo->id,
         ]);
     }
 

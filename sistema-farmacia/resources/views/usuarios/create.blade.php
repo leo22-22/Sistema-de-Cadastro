@@ -24,10 +24,27 @@
                         <label class="form-label fw-semibold">Perfil *</label>
                         <select name="role" class="form-select @error('role') is-invalid @enderror" required>
                             <option value="funcionario" {{ old('role') === 'funcionario' ? 'selected' : '' }}>Funcionário</option>
+                            <option value="admin_farmacia" {{ old('role') === 'admin_farmacia' ? 'selected' : '' }}>Admin Farmácia</option>
+                            @if(auth()->user()->isSuperadmin())
                             <option value="superadmin" {{ old('role') === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                            @endif
                         </select>
                         @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
+                    @if(auth()->user()->isSuperadmin())
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Farmácia</label>
+                        <select name="farmacia_id" class="form-select @error('farmacia_id') is-invalid @enderror">
+                            <option value="">— Nenhuma (superadmin de plataforma) —</option>
+                            @foreach($farmacias as $f)
+                            <option value="{{ $f->id }}" {{ old('farmacia_id') == $f->id ? 'selected' : '' }}>
+                                {{ $f->nome }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('farmacia_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    @endif
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Senha *</label>
                         <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>

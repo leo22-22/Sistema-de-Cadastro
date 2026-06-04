@@ -15,9 +15,18 @@ use Illuminate\Support\Facades\Storage;
 
 class ProcessoController extends Controller
 {
+    private function escopoFarmacia($query)
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin() && $user->farmacia_id) {
+            $query->where('farmacia_id', $user->farmacia_id);
+        }
+        return $query;
+    }
+
     public function index(Request $request)
     {
-        $query = Processo::with(['paciente', 'cid10', 'criadoPor']);
+        $query = $this->escopoFarmacia(Processo::with(['paciente', 'cid10', 'criadoPor']));
 
         if ($request->filled('busca')) {
             $query->where(function ($q) use ($request) {
@@ -98,6 +107,7 @@ class ProcessoController extends Controller
             'observacoes'             => $request->observacoes,
             'status'                  => 'aberto',
             'created_by'              => auth()->id(),
+            'farmacia_id'             => auth()->user()->farmacia_id,
         ]);
 
         foreach ($request->medicamentos as $item) {
