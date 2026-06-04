@@ -10,7 +10,7 @@ class Lote extends Model
     use HasFactory;
 
     protected $fillable = [
-        'farmacia_id',
+        'farmacia_id', 'created_by',
         'medicamento_id', 'lote', 'validade',
         'quantidade_inicial', 'quantidade_atual',
         'data_entrada', 'observacoes',
@@ -27,6 +27,11 @@ class Lote extends Model
     public function farmacia()
     {
         return $this->belongsTo(Farmacia::class);
+    }
+
+    public function criadoPor()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function medicamento()

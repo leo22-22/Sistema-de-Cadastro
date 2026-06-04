@@ -19,7 +19,7 @@ class LoteController extends Controller
 
     public function index(Request $request)
     {
-        $query = $this->escopoFarmacia(Lote::with('medicamento'));
+        $query = $this->escopoFarmacia(Lote::with('medicamento', 'criadoPor'));
         if ($request->filled('medicamento_id')) {
             $query->where('medicamento_id', $request->medicamento_id);
         }
@@ -49,7 +49,8 @@ class LoteController extends Controller
         ]);
 
         $data['quantidade_atual'] = $data['quantidade_inicial'];
-        $data['farmacia_id'] = auth()->user()->farmacia_id;
+        $data['farmacia_id']      = auth()->user()->farmacia_id;
+        $data['created_by']       = auth()->id();
         Lote::create($data);
 
         return redirect()->route('lotes.index')

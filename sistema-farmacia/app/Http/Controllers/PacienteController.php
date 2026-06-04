@@ -62,7 +62,7 @@ class PacienteController extends Controller
         ]);
 
         $data['sem_representante'] = $request->boolean('sem_representante');
-        $paciente = Paciente::create([...$data, 'ativo' => true]);
+        $paciente = Paciente::create([...$data, 'ativo' => true, 'created_by' => auth()->id()]);
 
         if (!$data['sem_representante'] && $request->filled('representantes')) {
             foreach ($request->representantes as $ordem => $repId) {

@@ -43,6 +43,7 @@
                     <th class="text-center">Qtd Atual</th>
                     <th>Validade</th>
                     <th>Entrada</th>
+                    <th>Cadastrado por</th>
                     <th class="text-center">Situação</th>
                     <th class="pe-3 text-end">Ações</th>
                 </tr>
@@ -70,6 +71,7 @@
                         @if($vencido)<br><small>VENCIDO</small>@endif
                     </td>
                     <td class="small text-muted">{{ $lote->data_entrada->format('d/m/Y') }}</td>
+                    <td class="small text-muted">{{ $lote->criadoPor?->name ?? '—' }}</td>
                     <td class="text-center">
                         @if($vencido)
                             <span class="badge bg-danger">Vencido</span>

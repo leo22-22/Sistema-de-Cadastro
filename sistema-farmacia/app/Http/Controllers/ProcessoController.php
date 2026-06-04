@@ -254,7 +254,11 @@ class ProcessoController extends Controller
             return back()->with('error', 'Este processo não pode ser cancelado.');
         }
 
-        $updates = ['status' => $novoStatus];
+        $updates = [
+            'status'            => $novoStatus,
+            'updated_by'        => auth()->id(),
+            'status_updated_at' => now(),
+        ];
 
         if ($novoStatus === 'em_andamento' && !$processo->data_primeira_retirada) {
             $hoje = now()->toDateString();

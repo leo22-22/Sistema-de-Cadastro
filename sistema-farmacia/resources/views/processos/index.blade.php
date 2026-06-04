@@ -47,6 +47,7 @@
                     <th>Tipo</th>
                     <th>APAC</th>
                     <th>Abertura</th>
+                    <th>Responsável</th>
                     <th class="text-center">Status</th>
                     <th class="pe-3 text-end">Ação</th>
                 </tr>
@@ -80,6 +81,7 @@
                         @endif
                     </td>
                     <td class="text-muted small">{{ $processo->created_at->format('d/m/Y') }}</td>
+                    <td class="text-muted small">{{ $processo->criadoPor?->name ?? '—' }}</td>
                     <td class="text-center">
                         <span class="badge {{ $processo->statusBadgeClass() }}">{{ $processo->statusLabel() }}</span>
                     </td>

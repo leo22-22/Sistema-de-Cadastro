@@ -12,6 +12,7 @@ class Processo extends Model
     protected $fillable = [
         'farmacia_id',
         'numero', 'tipo_processo',
+        'updated_by', 'status_updated_at',
         'paciente_id', 'cid10_id', 'medico_prescritor_id',
         'tipo_receita_id', 'tipo_relacao_remessa_id',
         'numero_receita', 'data_receita', 'data_validade_receita',
@@ -53,6 +54,11 @@ class Processo extends Model
     public function farmacia()
     {
         return $this->belongsTo(Farmacia::class);
+    }
+
+    public function atualizadoPor()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function paciente()

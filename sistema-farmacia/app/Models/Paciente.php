@@ -11,6 +11,7 @@ class Paciente extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_by',
         'nome', 'nome_mae', 'cpf', 'rg', 'cns', 'prontuario',
         'data_nascimento', 'raca_cor', 'peso', 'altura',
         'telefone', 'email',
@@ -26,6 +27,11 @@ class Paciente extends Model
             'ativo'            => 'boolean',
             'sem_representante'=> 'boolean',
         ];
+    }
+
+    public function criadoPor()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function representantes()
