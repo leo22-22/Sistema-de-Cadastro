@@ -326,6 +326,34 @@
     </a>
 
     <nav class="sb-nav">
+        @if(auth()->user()->isSuperadmin())
+        {{-- ── MENU SUPERADMIN ── --}}
+        <div class="sb-section">Visão Geral</div>
+        <a href="{{ route('dashboard') }}" class="sb-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="bi bi-speedometer2"></i>Dashboard
+        </a>
+
+        <div class="sb-section">Gestão</div>
+        <a href="{{ route('farmacias.index') }}" class="sb-link {{ request()->routeIs('farmacias.*') ? 'active' : '' }}">
+            <i class="bi bi-hospital"></i>Farmácias
+        </a>
+        <a href="{{ route('usuarios.index') }}" class="sb-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+            <i class="bi bi-people-fill"></i>Usuários
+        </a>
+
+        <div class="sb-section">Catálogo</div>
+        <a href="{{ route('medicamentos.index') }}" class="sb-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}">
+            <i class="bi bi-capsule"></i>Medicamentos
+        </a>
+        <a href="{{ route('tipos-receita.index') }}" class="sb-link {{ request()->routeIs('tipos-receita.*') ? 'active' : '' }}">
+            <i class="bi bi-file-medical"></i>Tipos de Receita
+        </a>
+        <a href="{{ route('tipos-relacao-remessa.index') }}" class="sb-link {{ request()->routeIs('tipos-relacao-remessa.*') ? 'active' : '' }}">
+            <i class="bi bi-truck"></i>Tipos de Remessa
+        </a>
+
+        @else
+        {{-- ── MENU FARMÁCIA (admin + funcionário) ── --}}
         <div class="sb-section">Principal</div>
         <a href="{{ route('dashboard') }}" class="sb-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i>Dashboard
@@ -353,27 +381,12 @@
             <i class="bi bi-box-seam"></i>Lotes
         </a>
 
-        @if(auth()->user()->podeGerenciarUsuarios())
+        @if(auth()->user()->isAdminFarmacia())
         <div class="sb-section">Administração</div>
         <a href="{{ route('usuarios.index') }}" class="sb-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
             <i class="bi bi-people-fill"></i>Usuários
         </a>
         @endif
-
-        @if(auth()->user()->isSuperadmin())
-        <div class="sb-section">Plataforma</div>
-        <a href="{{ route('farmacias.index') }}" class="sb-link {{ request()->routeIs('farmacias.*') ? 'active' : '' }}">
-            <i class="bi bi-hospital"></i>Farmácias
-        </a>
-        <a href="{{ route('medicamentos.index') }}" class="sb-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}">
-            <i class="bi bi-capsule"></i>Medicamentos
-        </a>
-        <a href="{{ route('tipos-receita.index') }}" class="sb-link {{ request()->routeIs('tipos-receita.*') ? 'active' : '' }}">
-            <i class="bi bi-file-medical"></i>Tipos de Receita
-        </a>
-        <a href="{{ route('tipos-relacao-remessa.index') }}" class="sb-link {{ request()->routeIs('tipos-relacao-remessa.*') ? 'active' : '' }}">
-            <i class="bi bi-truck"></i>Tipos de Remessa
-        </a>
         @endif
     </nav>
 

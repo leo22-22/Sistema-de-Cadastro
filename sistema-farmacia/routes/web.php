@@ -26,26 +26,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
+        if ($user->isSuperadmin()) {
+            $totalFarmacias  = \App\Models\Farmacia::count();
+            $farmaciasAtivas = \App\Models\Farmacia::where('ativo', true)->count();
+            $totalUsuarios   = \App\Models\User::where('role', '!=', 'superadmin')->count();
+            $totalProcessos  = Processo::count();
+            $totalRecibos    = Recibo::count();
+            $totalMedicamentos = \App\Models\Medicamento::where('ativo', true)->count();
+            $ultimasFarmacias  = \App\Models\Farmacia::withCount('users')->latest()->take(6)->get();
+
+            return view('dashboard-superadmin', compact(
+                'totalFarmacias', 'farmaciasAtivas', 'totalUsuarios',
+                'totalProcessos', 'totalRecibos', 'totalMedicamentos',
+                'ultimasFarmacias'
+            ));
+        }
+
         $processoQuery = Processo::query();
         $reciboQuery   = Recibo::query();
         $resenteQuery  = Processo::with(['paciente', 'cid10', 'criadoPor']);
         $apacQuery     = Processo::with('paciente');
 
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if ($user->farmacia_id) {
             $processoQuery->where('farmacia_id', $user->farmacia_id);
             $reciboQuery->whereHas('processo', fn($q) => $q->where('farmacia_id', $user->farmacia_id));
             $resenteQuery->where('farmacia_id', $user->farmacia_id);
             $apacQuery->where('farmacia_id', $user->farmacia_id);
         }
 
-        $totalPacientes        = Paciente::ativo()->count();
-        $totalProcessos        = $processoQuery->count();
-        $processosAbertos      = (clone $processoQuery)->where('status', 'aberto')->count();
-        $processosEmAndamento  = (clone $processoQuery)->where('status', 'em_andamento')->count();
-        $processosConcluidos   = (clone $processoQuery)->where('status', 'concluido')->count();
-        $totalRecibos          = $reciboQuery->count();
-        $recentes              = $resenteQuery->latest()->take(8)->get();
-        $apacAlerta            = $apacQuery
+        $totalPacientes       = Paciente::ativo()->count();
+        $totalProcessos       = $processoQuery->count();
+        $processosAbertos     = (clone $processoQuery)->where('status', 'aberto')->count();
+        $processosEmAndamento = (clone $processoQuery)->where('status', 'em_andamento')->count();
+        $processosConcluidos  = (clone $processoQuery)->where('status', 'concluido')->count();
+        $totalRecibos         = $reciboQuery->count();
+        $recentes             = $resenteQuery->latest()->take(8)->get();
+        $apacAlerta           = $apacQuery
             ->whereNotNull('validade_apac')
             ->whereIn('status', ['aberto', 'em_andamento'])
             ->where('validade_apac', '<=', now()->addDays(30))
