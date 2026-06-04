@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedTiposReceita(): void
     {
-        TipoReceita::insert([
+        TipoReceita::insertOrIgnore([
             ['nome' => 'Receita Branca Simples',          'cor' => 'secondary', 'requer_retencao' => false, 'descricao' => 'Medicamentos sem controle especial.',                         'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
             ['nome' => 'Receita Azul (Psicotrópicos)',     'cor' => 'primary',   'requer_retencao' => true,  'descricao' => 'Psicotrópicos — retenção obrigatória (RDC 344/98).',          'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
             ['nome' => 'Receita Amarela (Anabolizantes)',  'cor' => 'warning',   'requer_retencao' => true,  'descricao' => 'Anabolizantes — retenção obrigatória.',                        'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
@@ -75,7 +75,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedTiposRelacaoRemessa(): void
     {
-        TipoRelacaoRemessa::insert([
+        TipoRelacaoRemessa::insertOrIgnore([
             ['nome' => 'Entrada de Processo',          'descricao' => 'Recebimento e abertura de novo processo de paciente.',             'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
             ['nome' => 'Envio para Central',           'descricao' => 'Envio dos processos recebidos para a central estadual.',           'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
             ['nome' => 'Devolução de Medicamentos',    'descricao' => 'Devolução de medicamentos não retirados pelo paciente.',           'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
@@ -185,7 +185,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach (array_chunk($cids, 20) as $chunk) {
-            Cid10::insert(array_map(fn($c) => [...$c, 'ativo' => true], $chunk));
+            Cid10::insertOrIgnore(array_map(fn($c) => [...$c, 'ativo' => true], $chunk));
         }
     }
 
@@ -231,7 +231,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($medicamentos as $m) {
-            Medicamento::create([...$m, 'ativo' => true]);
+            Medicamento::firstOrCreate(['nome' => $m['nome']], [...$m, 'ativo' => true]);
         }
     }
 }
