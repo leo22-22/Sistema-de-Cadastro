@@ -6,6 +6,7 @@ use App\Models\Lote;
 use App\Models\Processo;
 use App\Models\Recibo;
 use App\Models\Representante;
+use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 
 class ReciboController extends Controller
@@ -96,6 +97,8 @@ class ReciboController extends Controller
             'gerado_por'                => auth()->id(),
         ]);
 
+        AuditoriaService::log('dispensar', "Dispensação {$recibo->numero}: {$recibo->quantidade}x {$recibo->medicamento->nome} — Processo {$processo->numero}", 'Recibo', $recibo->id);
+
         return redirect()->route('recibos.imprimir', $recibo)
             ->with('success', 'Recibo gerado. Imprima e solicite a assinatura do paciente/representante.');
     }
@@ -130,6 +133,7 @@ class ReciboController extends Controller
 
     public function destroy(Recibo $recibo)
     {
+        AuditoriaService::log('estornar', "Recibo {$recibo->numero} estornado", 'Recibo', $recibo->id);
         if ($recibo->lote_id) {
             $recibo->lote->increment('quantidade_atual', $recibo->quantidade);
         }

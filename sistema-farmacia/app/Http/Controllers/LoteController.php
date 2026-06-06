@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lote;
 use App\Models\Medicamento;
+use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 
 class LoteController extends Controller
@@ -51,7 +52,8 @@ class LoteController extends Controller
         $data['quantidade_atual'] = $data['quantidade_inicial'];
         $data['farmacia_id']      = auth()->user()->farmacia_id;
         $data['created_by']       = auth()->id();
-        Lote::create($data);
+        $lote = Lote::create($data);
+        AuditoriaService::log('criar', "Lote {$lote->lote} cadastrado para {$lote->medicamento->nome}", 'Lote', $lote->id);
 
         return redirect()->route('lotes.index')
             ->with('success', 'Lote cadastrado com sucesso.');
@@ -87,6 +89,7 @@ class LoteController extends Controller
         if ($lote->recibos()->exists()) {
             return back()->with('error', 'Lote possui dispensações registradas e não pode ser removido.');
         }
+        AuditoriaService::log('excluir', "Lote {$lote->lote} removido", 'Lote', $lote->id);
         $lote->delete();
         return back()->with('success', 'Lote removido.');
     }

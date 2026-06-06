@@ -12,6 +12,9 @@ use App\Http\Controllers\TipoReceitaController;
 use App\Http\Controllers\TipoRelacaoRemessaController;
 use App\Http\Controllers\ProcessoController;
 use App\Http\Controllers\ReciboController;
+use App\Http\Controllers\RelatorioController;
+use App\Http\Controllers\AuditoriaController;
+use App\Models\Lote;
 use App\Models\Processo;
 use App\Models\Paciente;
 use App\Models\Recibo;
@@ -68,10 +71,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->orderBy('validade_apac')
             ->get();
 
+        $loteQuery30 = Lote::with('medicamento')->where('quantidade_atual', '>', 0)
+            ->whereBetween('validade', [now(), now()->addDays(30)]);
+        $loteQuery90 = Lote::with('medicamento')->where('quantidade_atual', '>', 0)
+            ->whereBetween('validade', [now()->addDays(31), now()->addDays(90)]);
+
+        if ($user->farmacia_id) {
+            $loteQuery30->where('farmacia_id', $user->farmacia_id);
+            $loteQuery90->where('farmacia_id', $user->farmacia_id);
+        }
+
+        $lotesVencendo30 = $loteQuery30->orderBy('validade')->get();
+        $lotesVencendo90 = $loteQuery90->orderBy('validade')->get();
+
         return view('dashboard', compact(
             'totalPacientes', 'totalProcessos', 'processosAbertos',
             'processosEmAndamento', 'processosConcluidos',
-            'totalRecibos', 'recentes', 'apacAlerta'
+            'totalRecibos', 'recentes', 'apacAlerta',
+            'lotesVencendo30', 'lotesVencendo90'
         ));
     })->name('dashboard');
 
@@ -102,6 +119,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('processos', ProcessoController::class);
     Route::patch('processos/{processo}/status', [ProcessoController::class, 'atualizarStatus'])
         ->name('processos.status');
+    Route::post('processos/{processo}/renovar', [ProcessoController::class, 'renovar'])
+        ->name('processos.renovar');
     Route::post('processos/{processo}/documentos', [ProcessoController::class, 'uploadDocumento'])
         ->name('processos.documentos.upload');
     Route::delete('processos/{processo}/documentos/{documento}', [ProcessoController::class, 'deleteDocumento'])
@@ -123,6 +142,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update'  => 'lotes.update',
         'destroy' => 'lotes.destroy',
     ]);
+
+    // Relatórios
+    Route::get('relatorios', [RelatorioController::class, 'index'])->name('relatorios.index');
+    Route::get('relatorios/dispensacoes', [RelatorioController::class, 'dispensacoes'])->name('relatorios.dispensacoes');
+    Route::get('relatorios/estoque', [RelatorioController::class, 'estoque'])->name('relatorios.estoque');
+    Route::get('relatorios/processos', [RelatorioController::class, 'processos'])->name('relatorios.processos');
+
+    // Auditoria
+    Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
 
     // Gestão de usuários — superadmin vê todos, admin_farmacia vê só os seus
     Route::middleware('admin_farmacia')->group(function () {

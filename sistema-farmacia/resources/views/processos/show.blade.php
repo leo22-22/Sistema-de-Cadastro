@@ -59,6 +59,14 @@
             <i class="bi bi-pencil me-1"></i>Editar
         </a>
         @endif
+
+        <form action="{{ route('processos.renovar', $processo) }}" method="POST"
+              onsubmit="return confirm('Criar processo de renovação baseado neste?')">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-repeat me-1"></i>Renovar
+            </button>
+        </form>
     </div>
 </div>
 

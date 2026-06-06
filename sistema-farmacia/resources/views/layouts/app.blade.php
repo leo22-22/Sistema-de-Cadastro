@@ -381,6 +381,14 @@
             <i class="bi bi-box-seam"></i>Lotes
         </a>
 
+        <div class="sb-section">Relatórios</div>
+        <a href="{{ route('relatorios.index') }}" class="sb-link {{ request()->routeIs('relatorios.*') ? 'active' : '' }}">
+            <i class="bi bi-bar-chart-line"></i>Relatórios
+        </a>
+        <a href="{{ route('auditoria.index') }}" class="sb-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
+            <i class="bi bi-shield-check"></i>Auditoria
+        </a>
+
         @if(auth()->user()->isAdminFarmacia())
         <div class="sb-section">Administração</div>
         <a href="{{ route('usuarios.index') }}" class="sb-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">

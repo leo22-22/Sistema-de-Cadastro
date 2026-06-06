@@ -126,9 +126,10 @@
         </div>
     </div>
 
-    {{-- Coluna direita: processos --}}
+    {{-- Coluna direita: processos + dispensações --}}
     <div class="col-lg-8">
-        <div class="card">
+        {{-- Processos --}}
+        <div class="card mb-4">
             <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                 <h6 class="mb-0 fw-bold">Processos ({{ $paciente->processos->count() }})</h6>
                 <a href="{{ route('processos.create', ['paciente_id' => $paciente->id]) }}" class="btn btn-sm btn-primary">
@@ -187,6 +188,51 @@
                         </tr>
                         @empty
                         <tr><td colspan="7" class="text-center text-muted py-4">Nenhum processo cadastrado.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Histórico de Dispensações --}}
+        @php
+            $todasDispensacoes = $paciente->processos->flatMap(fn($p) => $p->recibos->map(fn($r) => ['recibo' => $r, 'processo' => $p]))->sortByDesc(fn($item) => $item['recibo']->created_at);
+        @endphp
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-receipt me-2 text-primary"></i>Histórico de Dispensações ({{ $todasDispensacoes->count() }})</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-3">Data</th>
+                            <th>Medicamento</th>
+                            <th>Processo</th>
+                            <th class="text-center">Qtd</th>
+                            <th>Mês Ref.</th>
+                            <th class="pe-3 text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($todasDispensacoes as $item)
+                        @php $recibo = $item['recibo']; $proc = $item['processo']; @endphp
+                        <tr>
+                            <td class="ps-3 small text-muted">{{ $recibo->created_at->format('d/m/Y') }}</td>
+                            <td class="fw-semibold small">{{ $recibo->medicamento->nome }}</td>
+                            <td><span class="badge bg-light text-dark border font-monospace" style="font-size:.7rem">{{ $proc->numero }}</span></td>
+                            <td class="text-center small">{{ $recibo->quantidade }}</td>
+                            <td class="small text-muted">
+                                {{ $recibo->mes_referencia ? \Carbon\Carbon::parse($recibo->mes_referencia)->translatedFormat('M/Y') : '—' }}
+                            </td>
+                            <td class="pe-3 text-end">
+                                <a href="{{ route('recibos.show', $recibo) }}" class="btn btn-sm btn-outline-primary" title="Ver recibo">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="6" class="text-center text-muted py-4">Nenhuma dispensação registrada.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -10,6 +10,7 @@ use App\Models\Processo;
 use App\Models\ProcessoDocumento;
 use App\Models\TipoReceita;
 use App\Models\TipoRelacaoRemessa;
+use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -120,6 +121,8 @@ class ProcessoController extends Controller
             ]);
         }
 
+        AuditoriaService::log('criar', "Processo {$processo->numero} criado para paciente {$processo->paciente->nome}", 'Processo', $processo->id);
+
         return redirect()->route('processos.show', $processo)
             ->with('success', 'Processo aberto com sucesso.');
     }
@@ -228,6 +231,8 @@ class ProcessoController extends Controller
         }
         $processo->medicamentos()->sync($sync);
 
+        AuditoriaService::log('editar', "Processo {$processo->numero} atualizado", 'Processo', $processo->id);
+
         return redirect()->route('processos.show', $processo)
             ->with('success', 'Processo atualizado com sucesso.');
     }
@@ -237,6 +242,8 @@ class ProcessoController extends Controller
         if ($processo->recibos()->exists()) {
             return back()->with('error', 'Não é possível excluir um processo com recibos gerados.');
         }
+        AuditoriaService::log('excluir', "Processo {$processo->numero} excluído", 'Processo', $processo->id);
+
         $processo->documentos->each(fn($doc) => Storage::delete($doc->arquivo));
         $processo->medicamentos()->detach();
         $processo->delete();
@@ -267,6 +274,7 @@ class ProcessoController extends Controller
         }
 
         $processo->update($updates);
+        AuditoriaService::log('status', "Processo {$processo->numero} → status '{$novoStatus}'", 'Processo', $processo->id);
         return back()->with('success', 'Status atualizado para "' . $processo->fresh()->statusLabel() . '".');
     }
 
@@ -308,5 +316,41 @@ class ProcessoController extends Controller
         Storage::delete($documento->arquivo);
         $documento->delete();
         return back()->with('success', 'Documento removido.');
+    }
+
+    public function renovar(Processo $processo)
+    {
+        $novo = Processo::create([
+            'numero'                  => Processo::gerarNumero(),
+            'tipo_processo'           => 'renovacao',
+            'paciente_id'             => $processo->paciente_id,
+            'cid10_id'                => $processo->cid10_id,
+            'medico_prescritor_id'    => $processo->medico_prescritor_id,
+            'tipo_receita_id'         => $processo->tipo_receita_id,
+            'tipo_relacao_remessa_id' => $processo->tipo_relacao_remessa_id,
+            'observacoes'             => $processo->observacoes,
+            'lme_entregue'            => false,
+            'receita_entregue'        => false,
+            'exame_entregue'          => false,
+            'documentos_entregues'    => false,
+            'status'                  => 'aberto',
+            'created_by'              => auth()->id(),
+            'farmacia_id'             => auth()->user()->farmacia_id,
+        ]);
+
+        foreach ($processo->medicamentos as $med) {
+            $novo->medicamentos()->attach($med->id, [
+                'periodicidade'     => $med->pivot->periodicidade,
+                'quantidade_diaria' => $med->pivot->quantidade_diaria,
+                'quantidade_mensal' => $med->pivot->quantidade_mensal,
+                'posologia'         => $med->pivot->posologia,
+                'observacoes'       => $med->pivot->observacoes,
+            ]);
+        }
+
+        AuditoriaService::log('renovar', "Processo {$novo->numero} criado por renovação de {$processo->numero}", 'Processo', $novo->id);
+
+        return redirect()->route('processos.show', $novo)
+            ->with('success', "Processo de renovação {$novo->numero} criado a partir de {$processo->numero}.");
     }
 }

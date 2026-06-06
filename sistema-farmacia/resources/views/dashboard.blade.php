@@ -75,6 +75,41 @@
 </div>
 @endif
 
+{{-- Alertas: Lotes vencendo em 30 dias --}}
+@if($lotesVencendo30->count())
+<div class="alert alert-danger border-danger d-flex align-items-start gap-3 mb-3">
+    <i class="bi bi-exclamation-octagon-fill fs-5 mt-1"></i>
+    <div>
+        <strong>{{ $lotesVencendo30->count() }} lote(s) vencem em até 30 dias:</strong>
+        <div class="mt-1 d-flex flex-wrap gap-1">
+            @foreach($lotesVencendo30->take(6) as $l)
+            <a href="{{ route('lotes.show', $l) }}" class="badge bg-danger text-decoration-none">
+                {{ $l->medicamento->nome }} — Lote {{ $l->lote }} ({{ $l->validade->format('d/m/Y') }})
+            </a>
+            @endforeach
+            @if($lotesVencendo30->count() > 6)<span class="badge bg-secondary">+{{ $lotesVencendo30->count() - 6 }} mais</span>@endif
+        </div>
+    </div>
+</div>
+@endif
+
+@if($lotesVencendo90->count())
+<div class="alert alert-warning border-warning d-flex align-items-start gap-3 mb-3">
+    <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+    <div>
+        <strong>{{ $lotesVencendo90->count() }} lote(s) vencem entre 31 e 90 dias:</strong>
+        <div class="mt-1 d-flex flex-wrap gap-1">
+            @foreach($lotesVencendo90->take(6) as $l)
+            <a href="{{ route('lotes.show', $l) }}" class="badge bg-warning text-dark text-decoration-none">
+                {{ $l->medicamento->nome }} — Lote {{ $l->lote }} ({{ $l->validade->format('d/m/Y') }})
+            </a>
+            @endforeach
+            @if($lotesVencendo90->count() > 6)<span class="badge bg-secondary">+{{ $lotesVencendo90->count() - 6 }} mais</span>@endif
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- Processos recentes --}}
 <div class="card">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">

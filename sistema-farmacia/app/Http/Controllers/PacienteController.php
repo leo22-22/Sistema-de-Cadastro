@@ -83,6 +83,7 @@ class PacienteController extends Controller
             'processos.cid10',
             'processos.criadoPor',
             'processos.medicoPrescritor',
+            'processos.recibos.medicamento',
         ]);
         $representantesDisponiveis = Representante::ativo()->orderBy('nome')->get();
         return view('pacientes.show', compact('paciente', 'representantesDisponiveis'));
