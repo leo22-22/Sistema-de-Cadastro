@@ -11,47 +11,83 @@
 
 {{-- Métricas --}}
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-2">
-        <div class="card p-3 border-start border-primary border-4">
-            <div class="text-muted small">Pacientes</div>
-            <div class="fs-3 fw-bold">{{ $totalPacientes }}</div>
-            <a href="{{ route('pacientes.index') }}" class="small text-primary text-decoration-none">Ver todos →</a>
-        </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ route('pacientes.index') }}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background:rgba(79,70,229,.12)">
+                    <i class="bi bi-people-fill" style="color:#4f46e5"></i>
+                </div>
+                <div>
+                    <div class="stat-value" data-count="{{ $totalPacientes }}">{{ $totalPacientes }}</div>
+                    <div class="stat-label">Pacientes</div>
+                </div>
+            </div>
+        </a>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card p-3 border-start border-secondary border-4">
-            <div class="text-muted small">Processos</div>
-            <div class="fs-3 fw-bold">{{ $totalProcessos }}</div>
-            <a href="{{ route('processos.index') }}" class="small text-secondary text-decoration-none">Ver todos →</a>
-        </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ route('processos.index') }}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background:rgba(100,116,139,.12)">
+                    <i class="bi bi-folder2-open" style="color:#475569"></i>
+                </div>
+                <div>
+                    <div class="stat-value" data-count="{{ $totalProcessos }}">{{ $totalProcessos }}</div>
+                    <div class="stat-label">Processos</div>
+                </div>
+            </div>
+        </a>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card p-3 border-start border-info border-4">
-            <div class="text-muted small">Abertos</div>
-            <div class="fs-3 fw-bold text-info">{{ $processosAbertos }}</div>
-            <a href="{{ route('processos.index', ['status' => 'aberto']) }}" class="small text-info text-decoration-none">Ver →</a>
-        </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ route('processos.index', ['status' => 'aberto']) }}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background:rgba(6,182,212,.12)">
+                    <i class="bi bi-folder-open" style="color:#0891b2"></i>
+                </div>
+                <div>
+                    <div class="stat-value" style="color:#0891b2" data-count="{{ $processosAbertos }}">{{ $processosAbertos }}</div>
+                    <div class="stat-label">Abertos</div>
+                </div>
+            </div>
+        </a>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card p-3 border-start border-warning border-4">
-            <div class="text-muted small">Em Andamento</div>
-            <div class="fs-3 fw-bold text-warning">{{ $processosEmAndamento }}</div>
-            <a href="{{ route('processos.index', ['status' => 'em_andamento']) }}" class="small text-warning text-decoration-none">Ver →</a>
-        </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ route('processos.index', ['status' => 'em_andamento']) }}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
+                    <i class="bi bi-arrow-repeat" style="color:#d97706"></i>
+                </div>
+                <div>
+                    <div class="stat-value" style="color:#d97706" data-count="{{ $processosEmAndamento }}">{{ $processosEmAndamento }}</div>
+                    <div class="stat-label">Em Andamento</div>
+                </div>
+            </div>
+        </a>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card p-3 border-start border-success border-4">
-            <div class="text-muted small">Concluídos</div>
-            <div class="fs-3 fw-bold text-success">{{ $processosConcluidos }}</div>
-            <a href="{{ route('processos.index', ['status' => 'concluido']) }}" class="small text-success text-decoration-none">Ver →</a>
-        </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ route('processos.index', ['status' => 'concluido']) }}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background:rgba(16,185,129,.12)">
+                    <i class="bi bi-check-circle-fill" style="color:#059669"></i>
+                </div>
+                <div>
+                    <div class="stat-value" style="color:#059669" data-count="{{ $processosConcluidos }}">{{ $processosConcluidos }}</div>
+                    <div class="stat-label">Concluídos</div>
+                </div>
+            </div>
+        </a>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card p-3 border-start border-dark border-4">
-            <div class="text-muted small">Dispensações</div>
-            <div class="fs-3 fw-bold">{{ $totalRecibos }}</div>
-            <a href="{{ route('recibos.index') }}" class="small text-dark text-decoration-none">Ver todas →</a>
-        </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ route('recibos.index') }}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-icon-wrap" style="background:rgba(124,58,237,.12)">
+                    <i class="bi bi-receipt" style="color:#7c3aed"></i>
+                </div>
+                <div>
+                    <div class="stat-value" style="color:#7c3aed" data-count="{{ $totalRecibos }}">{{ $totalRecibos }}</div>
+                    <div class="stat-label">Dispensações</div>
+                </div>
+            </div>
+        </a>
     </div>
 </div>
 

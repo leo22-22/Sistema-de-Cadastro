@@ -21,7 +21,7 @@ class LotesVencendoMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '[FarmáciaMuni] Alerta: lotes vencendo e estoque baixo',
+            subject: '[GovSaúde] Alerta: lotes vencendo e estoque baixo',
         );
     }
 

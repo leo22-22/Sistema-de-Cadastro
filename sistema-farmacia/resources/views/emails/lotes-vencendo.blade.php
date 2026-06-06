@@ -18,7 +18,7 @@
 </head>
 <body>
 <div class="card">
-    <h2>Alerta Farmácia Municipal</h2>
+    <h2>Alerta GovSaúde</h2>
     <div class="sub">Gerado em {{ now()->format('d/m/Y \à\s H:i') }} | Destinatário: {{ $nomeDestino }}</div>
 
     @if($lotes30->count())
@@ -56,7 +56,7 @@
     @endif
 
     <div class="footer">
-        Este e-mail foi gerado automaticamente pelo sistema FarmáciaMuni.<br>
+        Este e-mail foi gerado automaticamente pelo sistema GovSaúde.<br>
         Acesse o painel para mais detalhes.
     </div>
 </div>

@@ -22,7 +22,7 @@
             {{-- Cabeçalho --}}
             <div class="row mb-4 align-items-start">
                 <div class="col-7">
-                    <h5 class="fw-bold mb-0">Farmácia Municipal</h5>
+                    <h5 class="fw-bold mb-0">GovSaúde</h5>
                     <p class="text-muted small mb-0">Componente Especializado da Assistência Farmacêutica</p>
                 </div>
                 <div class="col-5 text-end">

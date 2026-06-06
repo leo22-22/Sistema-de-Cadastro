@@ -23,7 +23,7 @@
     {{-- Cabeçalho --}}
     <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
-            <div style="font-size:20px;font-weight:700">Farmácia Municipal</div>
+            <div style="font-size:20px;font-weight:700">GovSaúde</div>
             <div style="font-size:11px;color:#6c757d">Componente Especializado da Assistência Farmacêutica — CEAF/SUS</div>
         </div>
         <div class="text-end">
