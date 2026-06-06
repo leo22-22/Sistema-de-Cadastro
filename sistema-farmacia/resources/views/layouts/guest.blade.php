@@ -12,17 +12,9 @@
         :root {
             --brand-primary: #0061ff;
             --brand-dark: #0f172a;
-            --brand-blue-mid: #1e40af;
         }
-
         * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-        }
+        body { font-family: 'Inter', sans-serif; margin: 0; min-height: 100vh; display: flex; }
 
         /* ── LEFT PANEL ── */
         .panel-left {
@@ -36,247 +28,151 @@
             position: relative;
             overflow: hidden;
         }
-
         .panel-left::before {
             content: '';
             position: absolute;
-            top: -120px;
-            right: -120px;
-            width: 400px;
-            height: 400px;
+            top: -120px; right: -120px;
+            width: 400px; height: 400px;
             background: radial-gradient(circle, rgba(0,97,255,.35) 0%, transparent 70%);
             border-radius: 50%;
         }
-
         .panel-left::after {
             content: '';
             position: absolute;
-            bottom: -100px;
-            left: -100px;
-            width: 350px;
-            height: 350px;
+            bottom: -100px; left: -100px;
+            width: 350px; height: 350px;
             background: radial-gradient(circle, rgba(0,97,255,.2) 0%, transparent 70%);
             border-radius: 50%;
         }
-
         .brand-icon {
-            width: 88px;
-            height: 88px;
+            width: 88px; height: 88px;
             background: linear-gradient(135deg, var(--brand-primary) 0%, #3b82f6 100%);
             border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin-bottom: 2rem;
             box-shadow: 0 8px 32px rgba(0,97,255,.45);
-            position: relative;
-            z-index: 1;
+            position: relative; z-index: 1;
         }
-
         .brand-icon i { font-size: 2.6rem; color: #fff; }
-
         .panel-left .brand-name {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: -.02em;
-            text-align: center;
-            position: relative;
-            z-index: 1;
+            font-size: 2rem; font-weight: 800; color: #fff;
+            letter-spacing: -.02em; text-align: center;
+            position: relative; z-index: 1;
         }
-
         .panel-left .brand-name span { color: var(--brand-primary); }
-
         .panel-left .brand-tagline {
-            color: #94a3b8;
-            font-size: .95rem;
-            text-align: center;
-            margin-top: .5rem;
-            position: relative;
-            z-index: 1;
+            color: #94a3b8; font-size: .95rem; text-align: center;
+            margin-top: .5rem; position: relative; z-index: 1;
         }
-
-        .feature-list {
-            margin-top: 3rem;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
+        .feature-list { margin-top: 3rem; width: 100%; position: relative; z-index: 1; }
         .feature-item {
-            display: flex;
-            align-items: center;
-            gap: .875rem;
-            padding: .875rem 1.25rem;
-            border-radius: 12px;
+            display: flex; align-items: center; gap: .875rem;
+            padding: .875rem 1.25rem; border-radius: 12px;
             background: rgba(255,255,255,.04);
             border: 1px solid rgba(255,255,255,.07);
             margin-bottom: .75rem;
         }
-
         .feature-item .icon-wrap {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+            width: 38px; height: 38px; border-radius: 10px;
             background: rgba(0,97,255,.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-
         .feature-item .icon-wrap i { color: var(--brand-primary); font-size: 1.05rem; }
-
-        .feature-item .feat-text {
-            font-size: .85rem;
-            color: #cbd5e1;
-            font-weight: 500;
-        }
-
+        .feature-item .feat-text { font-size: .85rem; color: #cbd5e1; font-weight: 500; }
         .panel-left .footer-note {
-            margin-top: auto;
-            padding-top: 2.5rem;
-            color: #475569;
-            font-size: .78rem;
-            text-align: center;
-            position: relative;
-            z-index: 1;
+            margin-top: auto; padding-top: 2.5rem;
+            color: #475569; font-size: .78rem; text-align: center;
+            position: relative; z-index: 1;
         }
 
         /* ── RIGHT PANEL ── */
         .panel-right {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
-            padding: 2.5rem;
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; padding: 2.5rem;
+            overflow-y: auto;
         }
+        .login-card { width: 100%; max-width: 440px; }
 
-        .login-card {
-            width: 100%;
-            max-width: 420px;
+        /* Tabs */
+        .auth-tabs {
+            display: flex; gap: 0;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 1.75rem;
         }
-
-        .login-card .card-heading {
-            font-size: 1.65rem;
-            font-weight: 700;
-            color: var(--brand-dark);
-            letter-spacing: -.02em;
+        .auth-tab {
+            flex: 1; padding: .65rem 0; text-align: center;
+            font-size: .875rem; font-weight: 600; color: #64748b;
+            cursor: pointer; border: none; background: none;
+            border-bottom: 2.5px solid transparent;
+            margin-bottom: -2px;
+            transition: color .15s, border-color .15s;
         }
+        .auth-tab.active { color: var(--brand-primary); border-bottom-color: var(--brand-primary); }
+        .auth-tab:hover:not(.active) { color: #374151; }
 
-        .login-card .card-sub {
-            color: #64748b;
-            font-size: .9rem;
-            margin-top: .25rem;
-        }
-
-        .form-label {
-            font-size: .83rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: .4rem;
-        }
-
+        /* Form elements */
+        .form-label { font-size: .83rem; font-weight: 600; color: #374151; margin-bottom: .4rem; }
         .form-control {
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: .65rem 1rem;
-            font-size: .925rem;
-            background: #fff;
+            border: 1.5px solid #e2e8f0; border-radius: 10px;
+            padding: .65rem 1rem; font-size: .925rem; background: #fff;
             transition: border-color .15s, box-shadow .15s;
         }
-
         .form-control:focus {
             border-color: var(--brand-primary);
             box-shadow: 0 0 0 3px rgba(0,97,255,.12);
         }
-
         .input-group-text {
-            border: 1.5px solid #e2e8f0;
-            border-right: none;
+            border: 1.5px solid #e2e8f0; border-right: none;
             border-radius: 10px 0 0 10px;
-            background: #f1f5f9;
-            color: #64748b;
+            background: #f1f5f9; color: #64748b;
         }
-
-        .input-group .form-control {
-            border-left: none;
-            border-radius: 0 10px 10px 0;
-        }
-
-        .input-group:focus-within .input-group-text {
-            border-color: var(--brand-primary);
-        }
-
+        .input-group .form-control { border-left: none; border-radius: 0 10px 10px 0; }
+        .input-group:focus-within .input-group-text { border-color: var(--brand-primary); }
         .input-group:focus-within .form-control {
             border-color: var(--brand-primary);
             box-shadow: 0 0 0 3px rgba(0,97,255,.12);
         }
-
-        .btn-login {
-            background: linear-gradient(135deg, var(--brand-primary) 0%, #3b82f6 100%);
-            border: none;
-            border-radius: 10px;
-            padding: .75rem;
-            font-weight: 600;
-            font-size: .95rem;
-            color: #fff;
-            width: 100%;
+        .btn-login, .btn-contato {
+            border: none; border-radius: 10px; padding: .75rem;
+            font-weight: 600; font-size: .95rem; color: #fff; width: 100%;
             transition: opacity .15s, transform .1s;
             box-shadow: 0 4px 14px rgba(0,97,255,.3);
         }
+        .btn-login { background: linear-gradient(135deg, var(--brand-primary) 0%, #3b82f6 100%); }
+        .btn-contato { background: linear-gradient(135deg, #059669 0%, #10b981 100%); box-shadow: 0 4px 14px rgba(5,150,105,.3); }
+        .btn-login:hover, .btn-contato:hover { opacity: .93; transform: translateY(-1px); color: #fff; }
+        .btn-login:active, .btn-contato:active { transform: translateY(0); }
 
-        .btn-login:hover { opacity: .93; transform: translateY(-1px); color: #fff; }
-        .btn-login:active { transform: translateY(0); }
-
-        .divider { border-color: #e2e8f0; }
-
-        .forgot-link {
-            font-size: .82rem;
-            color: #64748b;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
+        .forgot-link { font-size: .82rem; color: #64748b; text-decoration: none; font-weight: 500; }
         .forgot-link:hover { color: var(--brand-primary); }
-
-        .remember-label {
-            font-size: .85rem;
-            color: #475569;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .form-check-input:checked {
-            background-color: var(--brand-primary);
-            border-color: var(--brand-primary);
-        }
+        .remember-label { font-size: .85rem; color: #475569; cursor: pointer; user-select: none; }
+        .form-check-input:checked { background-color: var(--brand-primary); border-color: var(--brand-primary); }
 
         .alert-danger {
-            border-radius: 10px;
-            font-size: .875rem;
-            border: 1px solid #fecaca;
-            background: #fff5f5;
-            color: #dc2626;
+            border-radius: 10px; font-size: .875rem;
+            border: 1px solid #fecaca; background: #fff5f5; color: #dc2626;
         }
-
-        .invalid-feedback, .text-red-600 {
-            font-size: .8rem;
-            color: #dc2626 !important;
+        .alert-success-custom {
+            border-radius: 12px; background: #ecfdf5;
+            border: 1px solid #6ee7b7; padding: 1.5rem 1.25rem;
+            text-align: center;
         }
+        .alert-success-custom .check-circle {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: #10b981; display: flex; align-items: center;
+            justify-content: center; margin: 0 auto 1rem;
+        }
+        .alert-success-custom .check-circle i { color: #fff; font-size: 1.6rem; }
+        .alert-success-custom h5 { font-size: 1.05rem; font-weight: 700; color: #065f46; margin-bottom: .4rem; }
+        .alert-success-custom p { font-size: .875rem; color: #047857; margin: 0; }
 
         /* Mobile */
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .panel-left {
-                width: 100%;
-                padding: 2.5rem 2rem;
-                min-height: auto;
-            }
+            .panel-left { width: 100%; padding: 2.5rem 2rem; min-height: auto; }
             .panel-left .brand-name { font-size: 1.6rem; }
-            .feature-list { display: none; }
-            .panel-left .footer-note { display: none; }
+            .feature-list, .panel-left .footer-note { display: none; }
             .panel-right { padding: 2rem 1.25rem; }
         }
     </style>
@@ -284,9 +180,7 @@
 <body>
     <!-- LEFT -->
     <div class="panel-left">
-        <div class="brand-icon">
-            <i class="bi bi-hospital-fill"></i>
-        </div>
+        <div class="brand-icon"><i class="bi bi-hospital-fill"></i></div>
         <div class="brand-name">FARMÁCIA<span>MUNI</span></div>
         <div class="brand-tagline">Sistema de Gestão Municipal</div>
 
@@ -304,23 +198,151 @@
                 <div class="feat-text">Controle de medicamentos e dispensação</div>
             </div>
             <div class="feature-item">
-                <div class="icon-wrap"><i class="bi bi-receipt"></i></div>
-                <div class="feat-text">Emissão de recibos e relatórios</div>
+                <div class="icon-wrap"><i class="bi bi-bar-chart-line"></i></div>
+                <div class="feat-text">Relatórios exportáveis para prestação de contas</div>
+            </div>
+            <div class="feature-item">
+                <div class="icon-wrap"><i class="bi bi-shield-check"></i></div>
+                <div class="feat-text">Log de auditoria completo por usuário</div>
             </div>
         </div>
 
         <div class="footer-note">
-            &copy; {{ date('Y') }} Farmácia Municipal &mdash; Todos os direitos reservados
+            &copy; {{ date('Y') }} FarmáciaMuni &mdash; Todos os direitos reservados
         </div>
     </div>
 
     <!-- RIGHT -->
     <div class="panel-right">
         <div class="login-card">
-            {{ $slot }}
+
+            {{-- Tabs --}}
+            <div class="auth-tabs">
+                <button class="auth-tab {{ !session('contato_enviado') && !request()->is('*contato*') ? 'active' : '' }}"
+                        id="tab-login" onclick="showTab('login')">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                </button>
+                <button class="auth-tab {{ session('contato_enviado') ? 'active' : '' }}"
+                        id="tab-contato" onclick="showTab('contato')">
+                    <i class="bi bi-stars me-1"></i>Quero meu sistema
+                </button>
+            </div>
+
+            {{-- Painel: Login --}}
+            <div id="panel-login" style="{{ session('contato_enviado') ? 'display:none' : '' }}">
+                {{ $slot }}
+            </div>
+
+            {{-- Painel: Quero meu sistema --}}
+            <div id="panel-contato" style="{{ session('contato_enviado') ? '' : 'display:none' }}">
+
+                @if(session('contato_enviado'))
+                {{-- Mensagem de sucesso --}}
+                <div class="alert-success-custom">
+                    <div class="check-circle"><i class="bi bi-check-lg"></i></div>
+                    <h5>Solicitação recebida!</h5>
+                    <p>Entraremos em contato em <strong>menos de uma hora</strong>.<br>Fique atento ao seu e-mail e telefone.</p>
+                </div>
+                <button class="btn btn-login mt-3" onclick="showTab('login')">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar ao login
+                </button>
+
+                @else
+                {{-- Formulário --}}
+                <div class="mb-4">
+                    <div style="font-size:1.5rem;font-weight:700;color:#0f172a;letter-spacing:-.02em">Quero o FarmáciaMuni</div>
+                    <div style="color:#64748b;font-size:.9rem;margin-top:.25rem">Preencha e entraremos em contato em menos de 1 hora</div>
+                </div>
+
+                @if($errors->any())
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    {{ $errors->first() }}
+                </div>
+                @endif
+
+                <form method="POST" action="{{ route('contato.store') }}" novalidate>
+                    @csrf
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome completo</label>
+                        <input type="text" name="nome" class="form-control @error('nome') is-invalid @enderror"
+                               placeholder="Seu nome" value="{{ old('nome') }}" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                   placeholder="seu@email.com" value="{{ old('email') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone / WhatsApp</label>
+                            <input type="text" name="telefone" class="form-control @error('telefone') is-invalid @enderror"
+                                   placeholder="(00) 00000-0000" value="{{ old('telefone') }}"
+                                   data-mask="telefone" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Município</label>
+                            <input type="text" name="municipio" class="form-control @error('municipio') is-invalid @enderror"
+                                   placeholder="Nome da cidade" value="{{ old('municipio') }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estado (UF)</label>
+                            <input type="text" name="estado" class="form-control @error('estado') is-invalid @enderror"
+                                   placeholder="SP" maxlength="2" value="{{ old('estado') }}"
+                                   style="text-transform:uppercase" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Mensagem (opcional)</label>
+                        <textarea name="mensagem" class="form-control" rows="3"
+                                  placeholder="Conte um pouco sobre a necessidade do município...">{{ old('mensagem') }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-contato">
+                        <i class="bi bi-send me-2"></i>Enviar solicitação
+                    </button>
+                </form>
+                @endif
+            </div>
+
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showTab(tab) {
+            document.getElementById('panel-login').style.display   = tab === 'login'   ? '' : 'none';
+            document.getElementById('panel-contato').style.display = tab === 'contato' ? '' : 'none';
+            document.getElementById('tab-login').classList.toggle('active',   tab === 'login');
+            document.getElementById('tab-contato').classList.toggle('active', tab === 'contato');
+        }
+
+        // Máscara de telefone no formulário de contato
+        (function () {
+            function fmt(v, pattern) {
+                var d = v.replace(/\D/g,''), r='', di=0;
+                for (var i=0; i<pattern.length && di<d.length; i++)
+                    r += pattern[i]==='0' ? d[di++] : pattern[i];
+                return r;
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('[data-mask="telefone"]').forEach(function(el) {
+                    el.addEventListener('input', function() {
+                        var d = el.value.replace(/\D/g,'').slice(0,11);
+                        el.value = d.length <= 10 ? fmt(d,'(00) 0000-0000') : fmt(d,'(00) 00000-0000');
+                    });
+                });
+                document.querySelectorAll('[name="estado"]').forEach(function(el) {
+                    el.addEventListener('input', function() { el.value = el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2); });
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

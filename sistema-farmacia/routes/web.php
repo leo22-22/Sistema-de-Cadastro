@@ -14,6 +14,7 @@ use App\Http\Controllers\ProcessoController;
 use App\Http\Controllers\ReciboController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\AuditoriaController;
+use App\Http\Controllers\ContactController;
 use App\Models\Lote;
 use App\Models\Processo;
 use App\Models\Paciente;
@@ -23,6 +24,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+// Formulário de contato público (sem autenticação)
+Route::post('/contato', [ContactController::class, 'store'])->name('contato.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -160,6 +164,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Área restrita ao Superadmin (plataforma)
     Route::middleware('superadmin')->group(function () {
         Route::resource('farmacias', FarmaciaController::class)->except(['show']);
+        Route::get('solicitacoes', [ContactController::class, 'index'])->name('contato.index');
+        Route::patch('solicitacoes/{contactRequest}/lido', [ContactController::class, 'marcarLido'])->name('contato.lido');
         Route::resource('medicamentos', MedicamentoController::class);
         Route::resource('tipos-receita', TipoReceitaController::class)->names([
             'index'   => 'tipos-receita.index',

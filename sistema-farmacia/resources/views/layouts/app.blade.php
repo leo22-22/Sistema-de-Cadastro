@@ -352,6 +352,19 @@
             <i class="bi bi-truck"></i>Tipos de Remessa
         </a>
 
+        <div class="sb-section">Relatórios</div>
+        <a href="{{ route('relatorios.index') }}" class="sb-link {{ request()->routeIs('relatorios.*') ? 'active' : '' }}">
+            <i class="bi bi-bar-chart-line"></i>Relatórios
+        </a>
+        <a href="{{ route('auditoria.index') }}" class="sb-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
+            <i class="bi bi-shield-check"></i>Auditoria
+        </a>
+        @php $naoLidas = \App\Models\ContactRequest::where('lido', false)->count(); @endphp
+        <a href="{{ route('contato.index') }}" class="sb-link {{ request()->routeIs('contato.*') ? 'active' : '' }}">
+            <i class="bi bi-envelope-open"></i>Solicitações
+            @if($naoLidas)<span class="badge bg-danger ms-auto" style="font-size:.6rem">{{ $naoLidas }}</span>@endif
+        </a>
+
         @else
         {{-- ── MENU FARMÁCIA (admin + funcionário) ── --}}
         <div class="sb-section">Principal</div>

@@ -103,7 +103,7 @@ class PacienteController extends Controller
             'nome_mae'         => ['nullable', 'string', 'max:255'],
             'cpf'              => ['nullable', 'string', 'max:14', "unique:pacientes,cpf,{$paciente->id}"],
             'rg'               => ['nullable', 'string', 'max:20'],
-            'cns'              => ['nullable', 'string', 'max:15', "unique:pacientes,cns,{$paciente->id}"],
+            'cns'              => ['nullable', 'string', 'max:19', "unique:pacientes,cns,{$paciente->id}"],
             'prontuario'       => ['nullable', 'string', 'max:50'],
             'data_nascimento'  => ['nullable', 'date', 'before:today'],
             'raca_cor'         => ['nullable', 'in:branca,preta,parda,amarela,indigena,nao_informada'],
