@@ -4,10 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>GovSaúde</title>
+    <title>GovSaúde — Gestão Farmacêutica Municipal</title>
+    <meta name="description" content="GovSaúde: sistema completo de gestão farmacêutica municipal. Controle de processos APAC, dispensação de medicamentos, estoque e relatórios para farmácias públicas.">
+    <meta name="keywords" content="farmácia municipal, gestão farmacêutica, CEAF, APAC, dispensação, medicamentos, saúde pública, componente especializado">
+    <meta name="author" content="GovSaúde">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#4f46e5">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="GovSaúde — Gestão Farmacêutica Municipal">
+    <meta property="og:description" content="Sistema completo para gestão de farmácias municipais: processos, estoque, dispensação e relatórios.">
+    <meta property="og:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><rect width='200' height='200' rx='40' fill='%234f46e5'/><path d='M60 90h40V50h40v40h40v40h-40v40H100v-40H60V90z' fill='white'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%234f46e5'/><rect x='13' y='6' width='6' height='20' rx='2' fill='white'/><rect x='6' y='13' width='20' height='6' rx='2' fill='white'/></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --indigo:       #4f46e5;
@@ -398,6 +408,177 @@
         }
 
         /* ══════════════════════════════════════
+           SPLASH / PAGE LOADER
+        ══════════════════════════════════════ */
+
+        /* Full-screen container — covers page instantly on load */
+        #gs-loader {
+            position: fixed; inset: 0; z-index: 99999;
+            background: #07071a;
+            overflow: hidden;
+            transition: opacity .35s ease;
+        }
+        #gs-loader.gs-out {
+            opacity: 0; pointer-events: none;
+        }
+
+        /* ── CURTAIN PANELS (first session load) ── */
+        .gs-panel {
+            position: absolute; top: 0; bottom: 0; width: 50%;
+            background: #07071a;
+            display: flex; align-items: center;
+            overflow: hidden; will-change: transform;
+        }
+        .gs-pl {
+            left: 0; justify-content: flex-end; padding-right: 2.5rem;
+            transform: translateX(-100%);
+        }
+        .gs-pr {
+            right: 0; justify-content: flex-start; padding-left: 2.5rem;
+            transform: translateX(100%);
+        }
+
+        /* Dot grid inside panels */
+        .gs-panel::before {
+            content:''; position:absolute; inset:0;
+            background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);
+            background-size:24px 24px; pointer-events:none;
+        }
+
+        /* Aurora orbs inside panels */
+        .gs-porb {
+            position:absolute; width:320px; height:320px;
+            border-radius:50%; filter:blur(90px); opacity:.45;
+            top:50%; transform:translateY(-50%); pointer-events:none;
+        }
+        .gs-porb-l { background:radial-gradient(#4f46e5,transparent 65%); left:-80px; }
+        .gs-porb-r { background:radial-gradient(#06b6d4,transparent 65%); right:-80px; }
+
+        /* Word text on panels */
+        .gs-word {
+            font-family:'Inter',sans-serif;
+            font-size:clamp(2.8rem,7vw,5.5rem);
+            font-weight:900; letter-spacing:-.05em; line-height:1;
+            position:relative; z-index:1;
+            opacity:0;
+        }
+        .gs-gov  { color:#fff; }
+        .gs-saud { color:#67e8f9; }
+
+        /* Center brand mark (hospital icon + name) */
+        .gs-cmk {
+            position:absolute; left:50%; top:50%;
+            transform:translate(-50%,-50%);
+            display:flex; flex-direction:column; align-items:center; gap:.7rem;
+            z-index:3; opacity:0; pointer-events:none;
+        }
+        .gs-cmk-icon {
+            width:72px; height:72px; border-radius:20px;
+            background:linear-gradient(135deg,#4f46e5,#7c3aed);
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 0 0 2px rgba(99,102,241,.4), 0 0 50px rgba(99,102,241,.7);
+        }
+        .gs-cmk-icon i { color:#fff; font-size:2.1rem; }
+        .gs-cmk-name {
+            font-family:'Inter',sans-serif;
+            font-size:1.6rem; font-weight:900; color:#fff; letter-spacing:-.04em;
+        }
+        .gs-cmk-name span { color:#67e8f9; }
+
+        /* Seam line between panels */
+        .gs-seam {
+            position:absolute; left:calc(50% - .5px); top:0; bottom:0; width:1px;
+            background:linear-gradient(to bottom,transparent,rgba(99,102,241,.7) 35%,rgba(6,182,212,.7) 65%,transparent);
+            z-index:2; opacity:0; pointer-events:none;
+        }
+
+        /* ── FIRST-LOAD animations ── */
+        #gs-loader.gs-first .gs-pl {
+            animation: plFull 2.1s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        #gs-loader.gs-first .gs-pr {
+            animation: prFull 2.1s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        #gs-loader.gs-first .gs-gov {
+            animation: wordLeft 2.1s ease forwards;
+        }
+        #gs-loader.gs-first .gs-saud {
+            animation: wordRight 2.1s ease forwards;
+        }
+        #gs-loader.gs-first .gs-cmk {
+            animation: cmkLife 2.1s ease forwards;
+        }
+        #gs-loader.gs-first .gs-seam {
+            animation: seamLife 2.1s ease forwards;
+        }
+
+        /* Panel full lifecycle keyframes */
+        @keyframes plFull {
+            0%   { transform:translateX(-100%); animation-timing-function:cubic-bezier(0,0,.2,1); }
+            28%  { transform:translateX(0);     animation-timing-function:linear; }
+            68%  { transform:translateX(0);     animation-timing-function:cubic-bezier(.4,0,1,1); }
+            100% { transform:translateX(-100%); }
+        }
+        @keyframes prFull {
+            0%   { transform:translateX(100%);  animation-timing-function:cubic-bezier(0,0,.2,1); }
+            28%  { transform:translateX(0);     animation-timing-function:linear; }
+            68%  { transform:translateX(0);     animation-timing-function:cubic-bezier(.4,0,1,1); }
+            100% { transform:translateX(100%);  }
+        }
+        /* Word slides in from right (left panel text) */
+        @keyframes wordLeft {
+            0%,22%   { opacity:0; transform:translateX(30px) scale(.85); }
+            34%      { opacity:1; transform:translateX(0) scale(1); }
+            64%      { opacity:1; transform:translateX(0) scale(1); }
+            76%,100% { opacity:0; transform:translateX(-12px) scale(.92); }
+        }
+        /* Word slides in from left (right panel text) */
+        @keyframes wordRight {
+            0%,22%   { opacity:0; transform:translateX(-30px) scale(.85); }
+            34%      { opacity:1; transform:translateX(0) scale(1); }
+            64%      { opacity:1; transform:translateX(0) scale(1); }
+            76%,100% { opacity:0; transform:translateX(12px) scale(.92); }
+        }
+        @keyframes cmkLife {
+            0%,32%   { opacity:0; transform:translate(-50%,-50%) scale(.75); }
+            44%      { opacity:1; transform:translate(-50%,-50%) scale(1); }
+            60%      { opacity:1; transform:translate(-50%,-50%) scale(1); }
+            72%,100% { opacity:0; transform:translate(-50%,-50%) scale(1.08); }
+        }
+        @keyframes seamLife {
+            0%,25%   { opacity:0; }
+            32%      { opacity:1; }
+            66%      { opacity:1; }
+            73%,100% { opacity:0; }
+        }
+
+        /* ── NAV-LOAD mini branded overlay ── */
+        #gs-loader.gs-nav {
+            background:rgba(7,7,26,.88);
+            backdrop-filter:blur(8px);
+            display:flex; align-items:center; justify-content:center;
+            animation:navFade .65s ease forwards;
+        }
+        #gs-loader.gs-nav .gs-panel { display:none; }
+        #gs-loader.gs-nav .gs-seam  { display:none; }
+        #gs-loader.gs-nav .gs-cmk  {
+            position:static; transform:none;
+            animation:navBrand .65s ease forwards;
+        }
+        @keyframes navFade {
+            0%   { opacity:0; }
+            18%  { opacity:1; }
+            82%  { opacity:1; }
+            100% { opacity:0; pointer-events:none; }
+        }
+        @keyframes navBrand {
+            0%   { opacity:0; transform:scale(.88); }
+            22%  { opacity:1; transform:scale(1); }
+            78%  { opacity:1; transform:scale(1); }
+            100% { opacity:0; transform:scale(1.05); }
+        }
+
+        /* ══════════════════════════════════════
            VIEW TRANSITIONS — cross-page animations
         ══════════════════════════════════════ */
         @view-transition { navigation: auto; }
@@ -454,6 +635,23 @@
     @stack('styles')
 </head>
 <body>
+
+{{-- Splash / Page Loader --}}
+<div id="gs-loader" aria-hidden="true">
+    <div class="gs-panel gs-pl">
+        <div class="gs-porb gs-porb-l"></div>
+        <span class="gs-word gs-gov">GOV</span>
+    </div>
+    <div class="gs-panel gs-pr">
+        <div class="gs-porb gs-porb-r"></div>
+        <span class="gs-word gs-saud">SAÚDE</span>
+    </div>
+    <div class="gs-seam"></div>
+    <div class="gs-cmk">
+        <div class="gs-cmk-icon"><i class="bi bi-hospital-fill"></i></div>
+        <div class="gs-cmk-name">Gov<span>Saúde</span></div>
+    </div>
+</div>
 
 {{-- Top progress bar --}}
 <div id="gs-nprogress"></div>
@@ -617,9 +815,37 @@ function sbToggle() {
     });
 })();
 
+/* ── Splash / Page loader ── */
+(function () {
+    var loader = document.getElementById('gs-loader');
+    if (!loader) return;
+    var KEY = 'gs_intro_v1';
+    var isFirst = !sessionStorage.getItem(KEY);
+
+    if (isFirst) {
+        sessionStorage.setItem(KEY, '1');
+        loader.classList.add('gs-first');
+        document.documentElement.style.overflow = 'hidden';
+        /* Total animation: 2100ms + 200ms buffer */
+        setTimeout(function () {
+            loader.classList.add('gs-out');
+            document.documentElement.style.overflow = '';
+            setTimeout(function () { loader.remove(); }, 380);
+        }, 2250);
+    } else {
+        loader.classList.add('gs-nav');
+        /* Mini loader: 650ms */
+        setTimeout(function () {
+            loader.classList.add('gs-out');
+            setTimeout(function () { loader.remove(); }, 380);
+        }, 650);
+    }
+})();
+
 /* ── Progress bar (NProgress-style) ── */
 (function () {
     var bar = document.getElementById('gs-nprogress');
+    if (!bar) return;
     var timer;
     function start() {
         clearTimeout(timer);
