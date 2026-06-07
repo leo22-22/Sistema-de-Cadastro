@@ -396,10 +396,67 @@
             .sb-overlay.open { display: block; }
             .main { margin-left: 0; padding: 1.25rem 1rem 3rem; }
         }
+
+        /* ══════════════════════════════════════
+           VIEW TRANSITIONS — cross-page animations
+        ══════════════════════════════════════ */
+        @view-transition { navigation: auto; }
+
+        ::view-transition-old(root) {
+            animation: 180ms cubic-bezier(.4,0,1,1) both vtOut;
+        }
+        ::view-transition-new(root) {
+            animation: 260ms cubic-bezier(0,0,.2,1) both vtIn;
+        }
+        @keyframes vtOut {
+            to { opacity:0; transform:translateY(-5px) scale(.99); }
+        }
+        @keyframes vtIn {
+            from { opacity:0; transform:translateY(8px) scale(.99); }
+        }
+
+        /* ══════════════════════════════════════
+           TOP PROGRESS BAR
+        ══════════════════════════════════════ */
+        #gs-nprogress {
+            position: fixed; top: 0; left: 0; right: 0; height: 2.5px;
+            z-index: 9998; pointer-events: none;
+            background: linear-gradient(90deg, var(--indigo), var(--cyan), var(--violet));
+            transform: scaleX(0); transform-origin: left;
+            transition: transform .25s ease, opacity .3s;
+            opacity: 0;
+        }
+        #gs-nprogress.active { opacity: 1; }
+
+        /* ══════════════════════════════════════
+           RIPPLE
+        ══════════════════════════════════════ */
+        @keyframes gsRipple {
+            to { transform: scale(2.8); opacity: 0; }
+        }
+
+        /* ══════════════════════════════════════
+           SCROLL-DRIVEN ENTRY (cards, rows)
+        ══════════════════════════════════════ */
+        @supports (animation-timeline: scroll()) {
+            .card, .stat-card {
+                animation: none; /* handled by JS class below */
+            }
+        }
+        .gs-reveal {
+            opacity: 0; transform: translateY(14px);
+            transition: opacity .4s ease, transform .4s ease;
+        }
+        .gs-reveal.visible {
+            opacity: 1; transform: translateY(0);
+        }
     </style>
     @stack('styles')
 </head>
 <body>
+
+{{-- Top progress bar --}}
+<div id="gs-nprogress"></div>
 
 {{-- Mobile topbar --}}
 <div class="topbar">
@@ -542,11 +599,11 @@ function sbToggle() {
     document.getElementById('sbOverlay').classList.toggle('open');
 }
 
-/* Toasts */
+/* ── Toasts ── */
 (function () {
     var msgs = [
         @if(session('success')) { type:'success', icon:'bi-check-circle-fill', text: @json(session('success')) }, @endif
-        @if(session('error'))   { type:'error',   icon:'bi-exclamation-circle-fill', text: @json(session('error')) },   @endif
+        @if(session('error'))   { type:'error',   icon:'bi-exclamation-circle-fill', text: @json(session('error')) }, @endif
     ];
     msgs.forEach(function(m) {
         var el = document.createElement('div');
@@ -555,29 +612,117 @@ function sbToggle() {
             + '<div class="t-body">' + m.text + '</div>'
             + '<button class="t-close" onclick="this.closest(\'.app-toast\').remove()">&times;</button>';
         document.getElementById('toast-stack').appendChild(el);
-        setTimeout(function() { el.style.opacity = '0'; el.style.transform = 'translateX(10px)'; }, 4500);
-        setTimeout(function() { el.remove(); }, 4800);
+        setTimeout(function() { el.style.opacity='0'; el.style.transform='translateX(12px)'; }, 4500);
+        setTimeout(function() { el.remove(); }, 4850);
     });
 })();
 
-/* Animated counters: add data-count="NNN" to any element */
+/* ── Progress bar (NProgress-style) ── */
+(function () {
+    var bar = document.getElementById('gs-nprogress');
+    var timer;
+    function start() {
+        clearTimeout(timer);
+        bar.classList.add('active');
+        bar.style.transform = 'scaleX(.7)';
+        bar.style.transition = 'transform .25s ease';
+    }
+    function done() {
+        bar.style.transform = 'scaleX(1)';
+        timer = setTimeout(function () {
+            bar.style.transition = 'opacity .3s';
+            bar.classList.remove('active');
+            bar.style.transform = 'scaleX(0)';
+            setTimeout(function () { bar.style.transition = ''; }, 350);
+        }, 200);
+    }
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest('a[href]');
+        if (!a) return;
+        var href = a.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript') || a.target) return;
+        start();
+    });
+    document.addEventListener('submit', function () { start(); });
+    window.addEventListener('pageshow', function () { done(); });
+    window.addEventListener('load', function () { done(); });
+})();
+
+/* ── Animated counters (data-count="N") ── */
 (function () {
     function animateCounter(el) {
         var target = parseInt(el.dataset.count, 10);
         if (isNaN(target)) return;
-        var start = 0, duration = 800, startTime = null;
+        var duration = 750, start = null;
         function step(ts) {
-            if (!startTime) startTime = ts;
-            var progress = Math.min((ts - startTime) / duration, 1);
-            var ease = 1 - Math.pow(1 - progress, 3);
+            if (!start) start = ts;
+            var p = Math.min((ts - start) / duration, 1);
+            var ease = 1 - Math.pow(1 - p, 3);
             el.textContent = Math.floor(ease * target);
-            if (progress < 1) requestAnimationFrame(step);
+            if (p < 1) requestAnimationFrame(step);
             else el.textContent = target;
         }
         requestAnimationFrame(step);
     }
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-count]').forEach(animateCounter);
+    });
+})();
+
+/* ── Ripple on .btn ── */
+(function () {
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn');
+        if (!btn) return;
+        var r = document.createElement('span');
+        var d = Math.max(btn.offsetWidth, btn.offsetHeight) * 2;
+        var rect = btn.getBoundingClientRect();
+        r.style.cssText = 'position:absolute;border-radius:50%;pointer-events:none;'
+            + 'width:' + d + 'px;height:' + d + 'px;'
+            + 'left:' + (e.clientX - rect.left - d / 2) + 'px;'
+            + 'top:'  + (e.clientY - rect.top  - d / 2) + 'px;'
+            + 'background:rgba(255,255,255,.2);transform:scale(0);animation:gsRipple .55s ease;';
+        var prev = btn.style.position;
+        btn.style.position = 'relative';
+        btn.style.overflow = 'hidden';
+        btn.appendChild(r);
+        setTimeout(function () { r.remove(); if (!prev) btn.style.position = ''; }, 600);
+    });
+})();
+
+/* ── Card spotlight (mouse-follow glow) ── */
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.stat-card').forEach(function (card) {
+            card.addEventListener('mousemove', function (e) {
+                var rect = card.getBoundingClientRect();
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+                card.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px, rgba(99,102,241,.06) 0%, #fff 65%)';
+            });
+            card.addEventListener('mouseleave', function () {
+                card.style.background = '';
+            });
+        });
+    });
+})();
+
+/* ── Scroll-driven reveal ── */
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        var els = document.querySelectorAll('.card, .stat-card, .alert');
+        var obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+                if (en.isIntersecting) {
+                    en.target.classList.add('visible');
+                    obs.unobserve(en.target);
+                }
+            });
+        }, { threshold: 0.08 });
+        els.forEach(function (el) {
+            el.classList.add('gs-reveal');
+            obs.observe(el);
+        });
     });
 })();
 </script>
