@@ -156,6 +156,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Auditoria
     Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
 
+    // Treinamento
+    Route::get('treinamento', [\App\Http\Controllers\TreinamentoController::class, 'index'])->name('treinamento.index');
+
     // Gestão de usuários — superadmin vê todos, admin_farmacia vê só os seus
     Route::middleware('admin_farmacia')->group(function () {
         Route::resource('usuarios', UserController::class)->except(['show']);

@@ -753,6 +753,11 @@
             <i class="bi bi-shield-check"></i>Auditoria
         </a>
 
+        <div class="sb-section">Ajuda</div>
+        <a href="{{ route('treinamento.index') }}" class="sb-link {{ request()->routeIs('treinamento.*') ? 'active' : '' }}">
+            <i class="bi bi-mortarboard-fill"></i>Treinamento
+        </a>
+
         @if(auth()->user()->isAdminFarmacia())
         <div class="sb-section">Administração</div>
         <a href="{{ route('usuarios.index') }}" class="sb-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
