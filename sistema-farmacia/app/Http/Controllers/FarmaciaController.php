@@ -22,7 +22,7 @@ class FarmaciaController extends Controller
     {
         $request->validate([
             'nome'        => ['required', 'string', 'max:255'],
-            'cnpj'        => ['nullable', 'string', 'max:18', 'unique:farmacias,cnpj'],
+            'cnpj'        => ['nullable', 'string', 'max:18', 'unique:farmacias,cnpj', 'cnpj'],
             'cnes'        => ['nullable', 'string', 'max:10'],
             'responsavel' => ['nullable', 'string', 'max:255'],
             'endereco'    => ['nullable', 'string', 'max:255'],
@@ -50,7 +50,7 @@ class FarmaciaController extends Controller
     {
         $request->validate([
             'nome'        => ['required', 'string', 'max:255'],
-            'cnpj'        => ['nullable', 'string', 'max:18', 'unique:farmacias,cnpj,' . $farmacia->id],
+            'cnpj'        => ['nullable', 'string', 'max:18', 'unique:farmacias,cnpj,' . $farmacia->id, 'cnpj'],
             'cnes'        => ['nullable', 'string', 'max:10'],
             'responsavel' => ['nullable', 'string', 'max:255'],
             'endereco'    => ['nullable', 'string', 'max:255'],

@@ -40,7 +40,7 @@ class PacienteController extends Controller
         $data = $request->validate([
             'nome'             => ['required', 'string', 'max:255'],
             'nome_mae'         => ['nullable', 'string', 'max:255'],
-            'cpf'              => ['nullable', 'string', 'max:14', 'unique:pacientes,cpf'],
+            'cpf'              => ['nullable', 'string', 'max:14', 'unique:pacientes,cpf', 'cpf'],
             'rg'               => ['nullable', 'string', 'max:20'],
             'cns'              => ['nullable', 'string', 'max:19', 'unique:pacientes,cns'],
             'prontuario'       => ['nullable', 'string', 'max:50'],
@@ -80,6 +80,7 @@ class PacienteController extends Controller
     {
         $paciente->load([
             'representantes',
+            'alergias',
             'processos.cid10',
             'processos.criadoPor',
             'processos.medicoPrescritor',
@@ -101,7 +102,7 @@ class PacienteController extends Controller
         $data = $request->validate([
             'nome'             => ['required', 'string', 'max:255'],
             'nome_mae'         => ['nullable', 'string', 'max:255'],
-            'cpf'              => ['nullable', 'string', 'max:14', "unique:pacientes,cpf,{$paciente->id}"],
+            'cpf'              => ['nullable', 'string', 'max:14', "unique:pacientes,cpf,{$paciente->id}", 'cpf'],
             'rg'               => ['nullable', 'string', 'max:20'],
             'cns'              => ['nullable', 'string', 'max:19', "unique:pacientes,cns,{$paciente->id}"],
             'prontuario'       => ['nullable', 'string', 'max:50'],

@@ -794,6 +794,49 @@
             </div>
         </div>
         <div class="sb-user-actions">
+            {{-- Sino de notificações --}}
+            @php $naoLidas = auth()->user()->unreadNotifications->count(); @endphp
+            <div class="dropdown" style="position:relative">
+                <button class="position-relative" title="Notificações" data-bs-toggle="dropdown" aria-expanded="false" style="background:none;border:none;padding:.3rem;color:#2d3a52;cursor:pointer;border-radius:6px;font-size:.85rem;line-height:1;">
+                    <i class="bi bi-bell"></i>
+                    @if($naoLidas > 0)
+                    <span style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:#ef4444;border-radius:50%;display:block;"></span>
+                    @endif
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow" style="min-width:300px;max-height:380px;overflow-y:auto;padding:.5rem 0;">
+                    <div class="d-flex justify-content-between align-items-center px-3 pb-2 border-bottom">
+                        <span style="font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em">Notificações</span>
+                        @if($naoLidas > 0)
+                        <form action="{{ route('notificacoes.todas-lidas') }}" method="POST">@csrf
+                            <button class="btn btn-link btn-sm p-0" style="font-size:.7rem">Marcar todas lidas</button>
+                        </form>
+                        @endif
+                    </div>
+                    @forelse(auth()->user()->notifications()->latest()->take(8)->get() as $notif)
+                    @php $d = $notif->data; @endphp
+                    <div class="px-3 py-2 {{ $notif->read_at ? '' : 'bg-light' }}" style="border-bottom:1px solid #f1f5f9">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi {{ $d['icone'] ?? 'bi-bell' }} text-{{ $d['cor'] ?? 'secondary' }} mt-1" style="font-size:.9rem;flex-shrink:0"></i>
+                            <div style="flex:1;min-width:0">
+                                <div style="font-size:.76rem;font-weight:600;color:#1e293b">{{ $d['titulo'] ?? '' }}</div>
+                                <div style="font-size:.71rem;color:#64748b;line-height:1.4">{{ $d['corpo'] ?? '' }}</div>
+                            </div>
+                            @if(!$notif->read_at)
+                            <form action="{{ route('notificacoes.lida', $notif->id) }}" method="POST" style="flex-shrink:0">@csrf
+                                <button class="btn btn-link p-0" style="font-size:.65rem;color:#94a3b8" title="Marcar lida">✓</button>
+                            </form>
+                            @endif
+                        </div>
+                        <div style="font-size:.65rem;color:#94a3b8;margin-top:.2rem">{{ $notif->created_at->diffForHumans() }}</div>
+                    </div>
+                    @empty
+                    <p class="text-muted text-center py-3 mb-0" style="font-size:.78rem">Nenhuma notificação.</p>
+                    @endforelse
+                    <div class="text-center pt-2">
+                        <a href="{{ route('notificacoes.index') }}" style="font-size:.72rem;color:#6366f1">Ver todas</a>
+                    </div>
+                </div>
+            </div>
             <a href="{{ route('profile.edit') }}" title="Perfil"><i class="bi bi-gear"></i></a>
             <form method="POST" action="{{ route('logout') }}" style="display:contents">
                 @csrf

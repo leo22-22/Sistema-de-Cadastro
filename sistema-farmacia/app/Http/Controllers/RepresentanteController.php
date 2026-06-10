@@ -30,7 +30,7 @@ class RepresentanteController extends Controller
     {
         $data = $request->validate([
             'nome'            => ['required', 'string', 'max:255'],
-            'cpf'             => ['nullable', 'string', 'max:14', 'unique:representantes,cpf'],
+            'cpf'             => ['nullable', 'string', 'max:14', 'unique:representantes,cpf', 'cpf'],
             'rg'              => ['nullable', 'string', 'max:20'],
             'telefone'        => ['nullable', 'string', 'max:20'],
             'logradouro'      => ['nullable', 'string', 'max:255'],
@@ -63,7 +63,7 @@ class RepresentanteController extends Controller
     {
         $data = $request->validate([
             'nome'            => ['required', 'string', 'max:255'],
-            'cpf'             => ['nullable', 'string', 'max:14', 'unique:representantes,cpf,' . $representante->id],
+            'cpf'             => ['nullable', 'string', 'max:14', 'unique:representantes,cpf,' . $representante->id, 'cpf'],
             'rg'              => ['nullable', 'string', 'max:20'],
             'telefone'        => ['nullable', 'string', 'max:20'],
             'logradouro'      => ['nullable', 'string', 'max:255'],

@@ -68,6 +68,9 @@ class ReciboController extends Controller
         $lote = $request->lote_id ? Lote::find($request->lote_id) : null;
 
         if ($lote) {
+            if ($lote->estaVencido()) {
+                return back()->with('error', "Lote {$lote->lote} está vencido desde {$lote->validade->format('d/m/Y')}. Selecione outro lote.");
+            }
             if ($lote->quantidade_atual < $request->quantidade) {
                 return back()->with('error', "Estoque insuficiente. Disponível: {$lote->quantidade_atual} unidades.");
             }

@@ -5,7 +5,10 @@ namespace App\Console\Commands;
 use App\Mail\LotesVencendoMail;
 use App\Models\Farmacia;
 use App\Models\Lote;
+use App\Models\Processo;
 use App\Models\User;
+use App\Notifications\ApacVencendoNotification;
+use App\Notifications\LoteVencendoNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -47,7 +50,25 @@ class NotificarVencimentos extends Command
                 Mail::to($admin->email)->send(
                     new LotesVencendoMail($lotes30, $lotesBaixo, $admin->name)
                 );
+                // Notificações in-app para lotes vencendo
+                foreach ($lotes30 as $lote) {
+                    $admin->notify(new LoteVencendoNotification($lote));
+                }
                 $this->line("Notificação enviada para {$admin->email} ({$farmacia->nome})");
+            }
+
+            // Notificações in-app para APACs vencendo em 30 dias
+            $apacs = Processo::with(['paciente'])
+                ->where('farmacia_id', $farmacia->id)
+                ->whereNotNull('validade_apac')
+                ->whereIn('status', ['aberto', 'em_andamento'])
+                ->whereBetween('validade_apac', [now(), now()->addDays(30)])
+                ->get();
+
+            foreach ($apacs as $processo) {
+                foreach ($admins as $admin) {
+                    $admin->notify(new ApacVencendoNotification($processo));
+                }
             }
         }
 

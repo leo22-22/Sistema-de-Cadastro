@@ -15,8 +15,24 @@
         <a href="{{ route('pacientes.edit', $paciente) }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-pencil me-1"></i>Editar
         </a>
+        @if(auth()->user()->isAdminFarmacia() || auth()->user()->isSuperadmin())
+        <a href="{{ route('lgpd.exportar', $paciente) }}" class="btn btn-outline-secondary btn-sm" title="Exportar dados pessoais (LGPD)">
+            <i class="bi bi-download me-1"></i>LGPD
+        </a>
+        @endif
     </div>
 </div>
+
+@if($paciente->alergias->where('gravidade', 'grave')->count() > 0)
+<div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2" role="alert">
+    <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+    <div>
+        <strong>ATENÇÃO:</strong> Paciente possui
+        <strong>{{ $paciente->alergias->where('gravidade', 'grave')->count() }} alergia(s) grave(s)</strong>:
+        {{ $paciente->alergias->where('gravidade', 'grave')->pluck('descricao')->implode(', ') }}
+    </div>
+</div>
+@endif
 
 <div class="row g-4">
     {{-- Coluna esquerda: dados --}}
@@ -76,6 +92,65 @@
             @else
                 <p class="text-muted small mb-0">Endereço não informado.</p>
             @endif
+        </div>
+
+        {{-- Alergias e Intolerâncias --}}
+        <div class="card p-4 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="section-title mb-0"><i class="bi bi-exclamation-triangle text-danger me-1"></i>Alergias / Intolerâncias</h6>
+            </div>
+
+            @forelse($paciente->alergias as $alergia)
+            <div class="d-flex justify-content-between align-items-start mb-2 pb-2 border-bottom">
+                <div>
+                    <span class="badge {{ $alergia->gravidade_badge }} me-1" style="font-size:.62rem">{{ $alergia->gravidade_label }}</span>
+                    <span class="badge bg-light text-dark border me-1" style="font-size:.62rem">{{ $alergia->tipo_label }}</span>
+                    <span class="small fw-semibold">{{ $alergia->descricao }}</span>
+                    @if($alergia->reacao)
+                    <br><small class="text-muted"><i class="bi bi-arrow-return-right me-1"></i>{{ $alergia->reacao }}</small>
+                    @endif
+                </div>
+                <form action="{{ route('alergias.destroy', [$paciente, $alergia]) }}" method="POST" class="ms-2">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" title="Remover"><i class="bi bi-x"></i></button>
+                </form>
+            </div>
+            @empty
+            <p class="text-muted small mb-2">Nenhuma alergia registrada.</p>
+            @endforelse
+
+            <form action="{{ route('alergias.store', $paciente) }}" method="POST" class="mt-2">
+                @csrf
+                <div class="row g-2">
+                    <div class="col-6">
+                        <select name="tipo" class="form-select form-select-sm" required>
+                            <option value="">Tipo...</option>
+                            @foreach(\App\Models\Alergia::$tipos as $k => $v)
+                            <option value="{{ $k }}">{{ $v }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select name="gravidade" class="form-select form-select-sm" required>
+                            <option value="">Gravidade...</option>
+                            @foreach(\App\Models\Alergia::$gravidadeLabels as $k => $v)
+                            <option value="{{ $k }}">{{ $v }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <input type="text" name="descricao" class="form-control form-control-sm" placeholder="Descrição (ex: Amoxicilina)" required>
+                    </div>
+                    <div class="col-12">
+                        <input type="text" name="reacao" class="form-control form-control-sm" placeholder="Reação (opcional)">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-plus me-1"></i>Adicionar Alergia
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
 
         {{-- Declaração autorizadora / Representantes --}}

@@ -5,10 +5,11 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Paciente extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'created_by',
@@ -44,6 +45,11 @@ class Paciente extends Model
     public function processos()
     {
         return $this->hasMany(Processo::class);
+    }
+
+    public function alergias()
+    {
+        return $this->hasMany(Alergia::class);
     }
 
     public function scopeAtivo($query)

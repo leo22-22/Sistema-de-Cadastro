@@ -108,6 +108,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('pacientes/{paciente}/representantes/{representante}', [PacienteController::class, 'desvincularRepresentante'])
         ->name('pacientes.desvincularRepresentante');
 
+    // Alergias
+    Route::post('pacientes/{paciente}/alergias', [\App\Http\Controllers\AlergiaController::class, 'store'])->name('alergias.store');
+    Route::delete('pacientes/{paciente}/alergias/{alergia}', [\App\Http\Controllers\AlergiaController::class, 'destroy'])->name('alergias.destroy');
+
+    // LGPD — exportação de dados do paciente
+    Route::get('pacientes/{paciente}/exportar-dados', [\App\Http\Controllers\LgpdController::class, 'exportar'])->name('lgpd.exportar');
+
     // Representantes
     Route::resource('representantes', RepresentanteController::class);
 
@@ -202,6 +209,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('rnds',  [\App\Http\Controllers\RndsController::class, 'index'])->name('rnds.index');
         Route::post('rnds', [\App\Http\Controllers\RndsController::class, 'update'])->name('rnds.update');
     });
+
+    // Notificações
+    Route::get('notificacoes', [\App\Http\Controllers\NotificacaoController::class, 'index'])->name('notificacoes.index');
+    Route::post('notificacoes/{id}/lida', [\App\Http\Controllers\NotificacaoController::class, 'marcarLida'])->name('notificacoes.lida');
+    Route::post('notificacoes/todas-lidas', [\App\Http\Controllers\NotificacaoController::class, 'marcarTodasLidas'])->name('notificacoes.todas-lidas');
 
     // Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

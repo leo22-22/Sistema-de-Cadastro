@@ -30,7 +30,7 @@ class MedicoPrescritController extends Controller
     {
         $data = $request->validate([
             'nome'           => 'required|string|max:255',
-            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm',
+            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm|crm',
             'cns'            => 'nullable|string|max:19|unique:medicos_prescritores,cns',
             'cnes'           => 'nullable|string|max:7',
             'estabelecimento'=> 'nullable|string|max:255',
@@ -60,7 +60,7 @@ class MedicoPrescritController extends Controller
     {
         $data = $request->validate([
             'nome'           => 'required|string|max:255',
-            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm,' . $medico->id,
+            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm,' . $medico->id . '|crm',
             'cns'            => 'nullable|string|max:19|unique:medicos_prescritores,cns,' . $medico->id,
             'cnes'           => 'nullable|string|max:7',
             'estabelecimento'=> 'nullable|string|max:255',
