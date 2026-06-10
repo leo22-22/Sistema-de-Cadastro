@@ -677,6 +677,7 @@
     </a>
 
     <nav class="sb-nav">
+        @php $naoLidasSb = auth()->user()->unreadNotifications->count(); @endphp
         @if(auth()->user()->isSuperadmin())
         {{-- ── MENU SUPERADMIN ── --}}
         <div class="sb-section">Visão Geral</div>
@@ -801,8 +802,8 @@
             </div>
         </div>
         <div class="sb-user-actions">
-            {{-- Sino de notificações --}}
-            @php $naoLidas = auth()->user()->unreadNotifications->count(); $naoLidasSb = $naoLidas; @endphp
+            {{-- Sino de notificações ($naoLidasSb calculado no topo do nav) --}}
+            @php $naoLidas = $naoLidasSb; @endphp
             <div class="dropdown" style="position:relative">
                 <button class="position-relative" title="Notificações" data-bs-toggle="dropdown" aria-expanded="false" style="background:none;border:none;padding:.3rem;color:#2d3a52;cursor:pointer;border-radius:6px;font-size:.85rem;line-height:1;">
                     <i class="bi bi-bell"></i>
