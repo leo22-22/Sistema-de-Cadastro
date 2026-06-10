@@ -10,6 +10,7 @@ use App\Models\Processo;
 use App\Models\ProcessoDocumento;
 use App\Models\TipoReceita;
 use App\Models\TipoRelacaoRemessa;
+use App\Notifications\ProcessoStatusNotification;
 use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -273,8 +274,16 @@ class ProcessoController extends Controller
             $updates['validade_apac']           = now()->addMonths(6)->toDateString();
         }
 
+        $statusAnterior = $processo->statusLabel();
         $processo->update($updates);
         AuditoriaService::log('status', "Processo {$processo->numero} → status '{$novoStatus}'", 'Processo', $processo->id);
+
+        // Notifica o criador do processo se for diferente de quem mudou o status
+        $criador = $processo->criadoPor;
+        if ($criador && $criador->id !== auth()->id()) {
+            $criador->notify(new ProcessoStatusNotification($processo->fresh(), $statusAnterior));
+        }
+
         return back()->with('success', 'Status atualizado para "' . $processo->fresh()->statusLabel() . '".');
     }
 

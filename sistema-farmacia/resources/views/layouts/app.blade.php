@@ -765,6 +765,13 @@
         </a>
 
         <div class="sb-section">Ajuda</div>
+        <a href="{{ route('notificacoes.index') }}" class="sb-link {{ request()->routeIs('notificacoes.*') ? 'active' : '' }}">
+            <i class="bi bi-bell-fill"></i>Notificações
+            @php /* $naoLidasSb já calculado acima no sino */ @endphp
+            @if($naoLidasSb > 0)
+            <span class="ms-auto badge rounded-pill" style="background:#ef4444;font-size:.6rem">{{ $naoLidasSb }}</span>
+            @endif
+        </a>
         <a href="{{ route('treinamento.index') }}" class="sb-link {{ request()->routeIs('treinamento.*') ? 'active' : '' }}">
             <i class="bi bi-mortarboard-fill"></i>Treinamento
         </a>
@@ -795,7 +802,7 @@
         </div>
         <div class="sb-user-actions">
             {{-- Sino de notificações --}}
-            @php $naoLidas = auth()->user()->unreadNotifications->count(); @endphp
+            @php $naoLidas = auth()->user()->unreadNotifications->count(); $naoLidasSb = $naoLidas; @endphp
             <div class="dropdown" style="position:relative">
                 <button class="position-relative" title="Notificações" data-bs-toggle="dropdown" aria-expanded="false" style="background:none;border:none;padding:.3rem;color:#2d3a52;cursor:pointer;border-radius:6px;font-size:.85rem;line-height:1;">
                     <i class="bi bi-bell"></i>
@@ -854,6 +861,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+/* Dropdown do sino: usa strategy:'fixed' para escapar do overflow-y:auto do sidebar */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+        new bootstrap.Dropdown(el, { popperConfig: { strategy: 'fixed' } });
+    });
+});
+
 function sbToggle() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sbOverlay').classList.toggle('open');
