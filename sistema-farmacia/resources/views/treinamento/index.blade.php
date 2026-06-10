@@ -196,6 +196,21 @@
         <h4><i class="bi bi-mortarboard-fill me-2"></i>Plano de Treinamento</h4>
         <small>Aprenda a usar o GovSaúde passo a passo</small>
     </div>
+    <button class="btn btn-outline-secondary btn-sm" id="btnSkip" onclick="trSkip()">
+        <i class="bi bi-x-lg me-1"></i>Ignorar treinamento
+    </button>
+</div>
+
+{{-- Estado: treinamento ignorado --}}
+<div id="trSkippedState" style="display:none">
+    <div class="card p-4 text-center" style="border:1.5px dashed #cbd5e1">
+        <i class="bi bi-mortarboard" style="font-size:2.5rem;color:#94a3b8;display:block;margin-bottom:.75rem"></i>
+        <h5 class="fw-700 mb-1" style="color:#64748b">Treinamento ignorado</h5>
+        <p class="text-muted mb-3" style="font-size:.875rem">Você pode retomar o treinamento a qualquer momento.</p>
+        <button class="btn btn-primary btn-sm" onclick="trRestore()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Retomar treinamento
+        </button>
+    </div>
 </div>
 
 {{-- Banner de conclusão --}}
@@ -563,8 +578,48 @@ $modulos = [
         }
     }
 
+    var SKIP_KEY = 'gs_training_skipped';
+
+    function applySkipState() {
+        var skipped = localStorage.getItem(SKIP_KEY) === '1';
+        var content = document.getElementById('trModules');
+        var hero    = document.querySelector('.tr-hero');
+        var progWrap= document.querySelector('.tr-progress-wrap');
+        var banner  = document.getElementById('trCompleteBanner');
+        var skipBtn = document.getElementById('btnSkip');
+        var skipState = document.getElementById('trSkippedState');
+
+        if (skipped) {
+            if (content)  content.style.display  = 'none';
+            if (hero)     hero.style.display     = 'none';
+            if (progWrap) progWrap.style.display = 'none';
+            if (banner)   banner.style.display   = 'none';
+            if (skipBtn)  skipBtn.style.display  = 'none';
+            if (skipState)skipState.style.display = '';
+        } else {
+            if (content)  content.style.display  = '';
+            if (hero)     hero.style.display     = '';
+            if (progWrap) progWrap.style.display = '';
+            if (skipBtn)  skipBtn.style.display  = '';
+            if (skipState)skipState.style.display = 'none';
+        }
+    }
+
+    window.trSkip = function () {
+        if (!confirm('Ignorar o treinamento? Você pode retomá-lo a qualquer momento.')) return;
+        localStorage.setItem(SKIP_KEY, '1');
+        applySkipState();
+    };
+
+    window.trRestore = function () {
+        localStorage.removeItem(SKIP_KEY);
+        applySkipState();
+    };
+
     /* ── Init: render all ── */
     document.addEventListener('DOMContentLoaded', function () {
+        applySkipState();
+
         document.querySelectorAll('.tr-module').forEach(function (el) {
             renderModule(el.id);
         });
