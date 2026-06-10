@@ -716,6 +716,17 @@
             @if($naoLidas)<span class="badge bg-danger ms-auto" style="font-size:.58rem">{{ $naoLidas }}</span>@endif
         </a>
 
+        <div class="sb-section">Sistema</div>
+        <a href="{{ route('backup.index') }}" class="sb-link {{ request()->routeIs('backup.*') ? 'active' : '' }}">
+            <i class="bi bi-database-fill-down"></i>Backup
+        </a>
+        <a href="{{ route('rnds.index') }}" class="sb-link {{ request()->routeIs('rnds.*') ? 'active' : '' }}">
+            <i class="bi bi-cloud-upload-fill"></i>RNDS
+        </a>
+        <a href="{{ route('status.index') }}" class="sb-link" target="_blank">
+            <i class="bi bi-activity"></i>Status
+        </a>
+
         @else
         {{-- ── MENU FARMÁCIA (admin + funcionário) ── --}}
         <div class="sb-section">Principal</div>
@@ -756,6 +767,9 @@
         <div class="sb-section">Ajuda</div>
         <a href="{{ route('treinamento.index') }}" class="sb-link {{ request()->routeIs('treinamento.*') ? 'active' : '' }}">
             <i class="bi bi-mortarboard-fill"></i>Treinamento
+        </a>
+        <a href="{{ route('backup.index') }}" class="sb-link {{ request()->routeIs('backup.*') ? 'active' : '' }}">
+            <i class="bi bi-database-fill-down"></i>Backup
         </a>
 
         @if(auth()->user()->isAdminFarmacia())

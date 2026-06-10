@@ -568,7 +568,14 @@
             </div>
         </div>
 
-        <div class="left-footer">&copy; {{ date('Y') }} GovSaúde &mdash; Todos os direitos reservados</div>
+        <div class="left-footer">
+            &copy; {{ date('Y') }} GovSaúde &mdash; Todos os direitos reservados<br>
+            <a href="{{ route('legal.termos') }}" style="color:#2d3a52;text-decoration:none" target="_blank">Termos de Uso</a>
+            &nbsp;&middot;&nbsp;
+            <a href="{{ route('legal.privacidade') }}" style="color:#2d3a52;text-decoration:none" target="_blank">Privacidade (LGPD)</a>
+            &nbsp;&middot;&nbsp;
+            <a href="{{ route('status.index') }}" style="color:#2d3a52;text-decoration:none" target="_blank">Status</a>
+        </div>
     </div>
 </div>
 

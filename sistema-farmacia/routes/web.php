@@ -25,6 +25,11 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+// Legal + Status (public, no auth required)
+Route::get('termos',      [\App\Http\Controllers\LegalController::class, 'termos'])->name('legal.termos');
+Route::get('privacidade', [\App\Http\Controllers\LegalController::class, 'privacidade'])->name('legal.privacidade');
+Route::get('status',      [\App\Http\Controllers\StatusController::class, 'index'])->name('status.index');
+
 // Formulário de contato público (sem autenticação)
 Route::post('/contato', [ContactController::class, 'store'])->name('contato.store');
 
@@ -159,6 +164,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Treinamento
     Route::get('treinamento', [\App\Http\Controllers\TreinamentoController::class, 'index'])->name('treinamento.index');
 
+    // Backup (superadmin full access + admin_farmacia read-only)
+    Route::get('backup',                        [\App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
+    Route::post('backup',                       [\App\Http\Controllers\BackupController::class, 'store'])->name('backup.store');
+    Route::get('backup/{filename}/download',    [\App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
+    Route::delete('backup/{filename}',          [\App\Http\Controllers\BackupController::class, 'destroy'])->name('backup.destroy');
+
     // Gestão de usuários — superadmin vê todos, admin_farmacia vê só os seus
     Route::middleware('admin_farmacia')->group(function () {
         Route::resource('usuarios', UserController::class)->except(['show']);
@@ -186,6 +197,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'update'  => 'tipos-relacao-remessa.update',
             'destroy' => 'tipos-relacao-remessa.destroy',
         ]);
+
+        // RNDS
+        Route::get('rnds',  [\App\Http\Controllers\RndsController::class, 'index'])->name('rnds.index');
+        Route::post('rnds', [\App\Http\Controllers\RndsController::class, 'update'])->name('rnds.update');
     });
 
     // Perfil
