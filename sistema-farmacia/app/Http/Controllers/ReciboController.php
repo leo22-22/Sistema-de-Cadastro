@@ -11,9 +11,31 @@ use Illuminate\Http\Request;
 
 class ReciboController extends Controller
 {
+    private function autorizarRecibo(Recibo $recibo): void
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin() && $user->farmacia_id) {
+            abort_if($recibo->processo->farmacia_id !== $user->farmacia_id, 403);
+        }
+    }
+
+    private function autorizarProcesso(Processo $processo): void
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin() && $user->farmacia_id) {
+            abort_if($processo->farmacia_id !== $user->farmacia_id, 403);
+        }
+    }
+
     public function index(Request $request)
     {
+        $user  = auth()->user();
         $query = Recibo::with(['processo.paciente', 'medicamento', 'geradoPor']);
+
+        if (!$user->isSuperadmin() && $user->farmacia_id) {
+            $farmaciaId = $user->farmacia_id;
+            $query->whereHas('processo', fn($q) => $q->where('farmacia_id', $farmaciaId));
+        }
 
         if ($request->filled('busca')) {
             $query->where(function ($q) use ($request) {
@@ -33,6 +55,8 @@ class ReciboController extends Controller
 
     public function create(Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         $processo->load(['paciente.representantes', 'cid10', 'medicamentos', 'medicoPrescritor']);
 
         $medicamentosIds = $processo->medicamentos->pluck('id');
@@ -49,6 +73,8 @@ class ReciboController extends Controller
 
     public function store(Request $request, Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         $medicamentosDoProcesso = $processo->medicamentos->pluck('id')->toArray();
 
         $request->validate([
@@ -108,6 +134,8 @@ class ReciboController extends Controller
 
     public function show(Recibo $recibo)
     {
+        $this->autorizarRecibo($recibo);
+
         $recibo->load([
             'processo.paciente.representantes',
             'processo.cid10',
@@ -122,6 +150,8 @@ class ReciboController extends Controller
 
     public function imprimir(Recibo $recibo)
     {
+        $this->autorizarRecibo($recibo);
+
         $recibo->load([
             'processo.paciente.representantes',
             'processo.cid10',
@@ -136,6 +166,8 @@ class ReciboController extends Controller
 
     public function destroy(Recibo $recibo)
     {
+        $this->autorizarRecibo($recibo);
+
         AuditoriaService::log('estornar', "Recibo {$recibo->numero} estornado", 'Recibo', $recibo->id);
         if ($recibo->lote_id) {
             $recibo->lote->increment('quantidade_atual', $recibo->quantidade);
