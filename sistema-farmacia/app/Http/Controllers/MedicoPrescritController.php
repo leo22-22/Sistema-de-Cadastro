@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MedicoPrescritor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class MedicoPrescritController extends Controller
 {
@@ -28,17 +29,40 @@ class MedicoPrescritController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nome'           => 'required|string|max:255',
-            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm|crm',
-            'cns'            => 'nullable|string|max:19|unique:medicos_prescritores,cns',
-            'cnes'           => 'nullable|string|max:7',
-            'estabelecimento'=> 'nullable|string|max:255',
-            'especialidade'  => 'nullable|string|max:100',
-            'telefone'       => 'nullable|string|max:15',
-            'cidade'         => 'nullable|string|max:100',
-            'uf'             => 'nullable|string|size:2',
+        $validator = Validator::make($request->all(), [
+            'nome'           => ['required', 'string', 'max:255'],
+            'crm'            => ['nullable', 'string', 'max:20', 'crm'],
+            'cns'            => ['nullable', 'string', 'max:20'],
+            'cnes'           => ['nullable', 'string', 'max:7'],
+            'estabelecimento'=> ['nullable', 'string', 'max:255'],
+            'especialidade'  => ['nullable', 'string', 'max:100'],
+            'telefone'       => ['nullable', 'string', 'max:15'],
+            'cidade'         => ['nullable', 'string', 'max:100'],
+            'uf'             => ['nullable', 'string', 'size:2'],
+        ], [
+            'crm.crm' => 'CRM inválido. O CRM deve conter entre 4 e 6 dígitos numéricos.',
         ]);
+
+        $validator->after(function ($v) use ($request) {
+            $crm = $request->input('crm');
+            $cns = $request->input('cns');
+
+            if ($crm && !$v->errors()->has('crm')) {
+                $dup = MedicoPrescritor::where('crm', $crm)->first();
+                if ($dup) {
+                    $v->errors()->add('crm', "Este CRM já está cadastrado para o(a) Dr(a). {$dup->nome}.");
+                }
+            }
+
+            if ($cns && !$v->errors()->has('cns')) {
+                $dup = MedicoPrescritor::where('cns', $cns)->first();
+                if ($dup) {
+                    $v->errors()->add('cns', "Este CNS já está cadastrado para o(a) Dr(a). {$dup->nome}.");
+                }
+            }
+        });
+
+        $data = $validator->validate();
 
         MedicoPrescritor::create([...$data, 'ativo' => true]);
         return redirect()->route('medicos-prescritores.index')
@@ -58,18 +82,41 @@ class MedicoPrescritController extends Controller
 
     public function update(Request $request, MedicoPrescritor $medico)
     {
-        $data = $request->validate([
-            'nome'           => 'required|string|max:255',
-            'crm'            => 'nullable|string|max:20|unique:medicos_prescritores,crm,' . $medico->id . '|crm',
-            'cns'            => 'nullable|string|max:19|unique:medicos_prescritores,cns,' . $medico->id,
-            'cnes'           => 'nullable|string|max:7',
-            'estabelecimento'=> 'nullable|string|max:255',
-            'especialidade'  => 'nullable|string|max:100',
-            'telefone'       => 'nullable|string|max:15',
-            'cidade'         => 'nullable|string|max:100',
-            'uf'             => 'nullable|string|size:2',
-            'ativo'          => 'boolean',
+        $validator = Validator::make($request->all(), [
+            'nome'           => ['required', 'string', 'max:255'],
+            'crm'            => ['nullable', 'string', 'max:20', 'crm'],
+            'cns'            => ['nullable', 'string', 'max:20'],
+            'cnes'           => ['nullable', 'string', 'max:7'],
+            'estabelecimento'=> ['nullable', 'string', 'max:255'],
+            'especialidade'  => ['nullable', 'string', 'max:100'],
+            'telefone'       => ['nullable', 'string', 'max:15'],
+            'cidade'         => ['nullable', 'string', 'max:100'],
+            'uf'             => ['nullable', 'string', 'size:2'],
+            'ativo'          => ['boolean'],
+        ], [
+            'crm.crm' => 'CRM inválido. O CRM deve conter entre 4 e 6 dígitos numéricos.',
         ]);
+
+        $validator->after(function ($v) use ($request, $medico) {
+            $crm = $request->input('crm');
+            $cns = $request->input('cns');
+
+            if ($crm && !$v->errors()->has('crm')) {
+                $dup = MedicoPrescritor::where('crm', $crm)->where('id', '!=', $medico->id)->first();
+                if ($dup) {
+                    $v->errors()->add('crm', "Este CRM já está cadastrado para o(a) Dr(a). {$dup->nome}.");
+                }
+            }
+
+            if ($cns && !$v->errors()->has('cns')) {
+                $dup = MedicoPrescritor::where('cns', $cns)->where('id', '!=', $medico->id)->first();
+                if ($dup) {
+                    $v->errors()->add('cns', "Este CNS já está cadastrado para o(a) Dr(a). {$dup->nome}.");
+                }
+            }
+        });
+
+        $data = $validator->validate();
 
         $medico->update($data);
         return redirect()->route('medicos-prescritores.index')

@@ -8,6 +8,21 @@
 
 <form action="{{ route('pacientes.store') }}" method="POST">
 @csrf
+
+@if($errors->any())
+<div class="alert alert-danger d-flex gap-2 mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+    <div>
+        <strong>Corrija os campos indicados abaixo:</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+</div>
+@endif
+
 <div class="row g-4">
 
     {{-- COLUNA PRINCIPAL --}}
@@ -54,7 +69,8 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">RG</label>
-                    <input type="text" name="rg" class="form-control" value="{{ old('rg') }}">
+                    <input type="text" name="rg" class="form-control @error('rg') is-invalid @enderror" value="{{ old('rg') }}">
+                    @error('rg')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">CNS (Cartão SUS)</label>

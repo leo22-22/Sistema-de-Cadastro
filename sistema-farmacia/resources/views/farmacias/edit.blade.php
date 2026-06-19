@@ -9,6 +9,19 @@
             <div class="card p-4">
                 <form action="{{ route('farmacias.update', $farmacia) }}" method="POST">
                     @csrf @method('PUT')
+                    @if($errors->any())
+                    <div class="alert alert-danger d-flex gap-2 mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+                        <div>
+                            <strong>Corrija os campos indicados abaixo:</strong>
+                            <ul class="mb-0 mt-1 ps-3">
+                                @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                    @endif
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label fw-semibold">Nome *</label>

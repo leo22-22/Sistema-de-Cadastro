@@ -8,6 +8,21 @@
 
 <form action="{{ route('representantes.update', $representante) }}" method="POST">
 @csrf @method('PATCH')
+
+@if($errors->any())
+<div class="alert alert-danger d-flex gap-2 mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+    <div>
+        <strong>Corrija os campos indicados abaixo:</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+</div>
+@endif
+
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card p-4 mb-3">
@@ -27,8 +42,9 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">RG</label>
-                    <input type="text" name="rg" class="form-control"
+                    <input type="text" name="rg" class="form-control @error('rg') is-invalid @enderror"
                            value="{{ old('rg', $representante->rg) }}">
+                    @error('rg')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Telefone</label>

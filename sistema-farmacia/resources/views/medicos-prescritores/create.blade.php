@@ -8,6 +8,21 @@
 
 <form action="{{ route('medicos-prescritores.store') }}" method="POST">
 @csrf
+
+@if($errors->any())
+<div class="alert alert-danger d-flex gap-2 mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+    <div>
+        <strong>Corrija os campos indicados abaixo:</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+</div>
+@endif
+
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card p-4 mb-3">

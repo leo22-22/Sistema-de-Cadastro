@@ -47,6 +47,8 @@ class UserController extends Controller
             'role'         => ['required', 'in:' . implode(',', $rolesPermitidos)],
             'farmacia_id'  => ['nullable', 'exists:farmacias,id'],
             'password'     => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'email.unique' => 'Este e-mail já está cadastrado para outro usuário do sistema.',
         ]);
 
         $farmaciaId = $user->isSuperadmin()

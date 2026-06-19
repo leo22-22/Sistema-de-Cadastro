@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Paciente;
 use App\Models\Representante;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class PacienteController extends Controller
 {
@@ -37,12 +39,12 @@ class PacienteController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'nome'             => ['required', 'string', 'max:255'],
             'nome_mae'         => ['nullable', 'string', 'max:255'],
-            'cpf'              => ['nullable', 'string', 'max:14', 'unique:pacientes,cpf', 'cpf'],
+            'cpf'              => ['nullable', 'string', 'max:14', 'cpf'],
             'rg'               => ['nullable', 'string', 'max:20'],
-            'cns'              => ['nullable', 'string', 'max:20', 'unique:pacientes,cns'],
+            'cns'              => ['nullable', 'string', 'max:20'],
             'prontuario'       => ['nullable', 'string', 'max:50'],
             'data_nascimento'  => ['nullable', 'date', 'before:today'],
             'raca_cor'         => ['nullable', 'in:branca,preta,parda,amarela,indigena,nao_informada'],
@@ -59,7 +61,52 @@ class PacienteController extends Controller
             'cep'              => ['nullable', 'string', 'max:10'],
             'sem_representante'=> ['boolean'],
             'observacoes'      => ['nullable', 'string'],
+        ], [
+            'cpf.cpf'              => 'CPF inválido. Verifique os dígitos e tente novamente.',
+            'data_nascimento.before' => 'A data de nascimento deve ser anterior a hoje.',
         ]);
+
+        $validator->after(function ($v) use ($request) {
+            $cpf = $request->input('cpf');
+            $rg  = $request->input('rg');
+            $cns = $request->input('cns');
+
+            if ($cpf && !$v->errors()->has('cpf')) {
+                $dupPaciente = Paciente::withTrashed()->where('cpf', $cpf)->first();
+                if ($dupPaciente) {
+                    $sufixo = $dupPaciente->trashed() ? ' (registro inativo)' : '';
+                    $v->errors()->add('cpf', "Este CPF já está cadastrado como Paciente: {$dupPaciente->nome}{$sufixo}.");
+                } else {
+                    $dupRep = Representante::where('cpf', $cpf)->first();
+                    if ($dupRep) {
+                        $v->errors()->add('cpf', "Este CPF já está cadastrado como Representante: {$dupRep->nome}. Verifique se não é um cadastro duplicado.");
+                    }
+                }
+            }
+
+            if ($cns && !$v->errors()->has('cns')) {
+                $dupCns = Paciente::withTrashed()->where('cns', $cns)->first();
+                if ($dupCns) {
+                    $sufixo = $dupCns->trashed() ? ' (registro inativo)' : '';
+                    $v->errors()->add('cns', "Este CNS (Cartão SUS) já está cadastrado como Paciente: {$dupCns->nome}{$sufixo}.");
+                }
+            }
+
+            if ($rg && !$v->errors()->has('rg')) {
+                $dupRgPac = Paciente::withTrashed()->where('rg', $rg)->first();
+                if ($dupRgPac) {
+                    $sufixo = $dupRgPac->trashed() ? ' (registro inativo)' : '';
+                    $v->errors()->add('rg', "Este RG já está cadastrado como Paciente: {$dupRgPac->nome}{$sufixo}.");
+                } else {
+                    $dupRgRep = Representante::where('rg', $rg)->first();
+                    if ($dupRgRep) {
+                        $v->errors()->add('rg', "Este RG já está cadastrado como Representante: {$dupRgRep->nome}.");
+                    }
+                }
+            }
+        });
+
+        $data = $validator->validate();
 
         $data['sem_representante'] = $request->boolean('sem_representante');
         $paciente = Paciente::create([...$data, 'ativo' => true, 'created_by' => auth()->id()]);
@@ -99,12 +146,12 @@ class PacienteController extends Controller
 
     public function update(Request $request, Paciente $paciente)
     {
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'nome'             => ['required', 'string', 'max:255'],
             'nome_mae'         => ['nullable', 'string', 'max:255'],
-            'cpf'              => ['nullable', 'string', 'max:14', "unique:pacientes,cpf,{$paciente->id}", 'cpf'],
+            'cpf'              => ['nullable', 'string', 'max:14', 'cpf'],
             'rg'               => ['nullable', 'string', 'max:20'],
-            'cns'              => ['nullable', 'string', 'max:20', "unique:pacientes,cns,{$paciente->id}"],
+            'cns'              => ['nullable', 'string', 'max:20'],
             'prontuario'       => ['nullable', 'string', 'max:50'],
             'data_nascimento'  => ['nullable', 'date', 'before:today'],
             'raca_cor'         => ['nullable', 'in:branca,preta,parda,amarela,indigena,nao_informada'],
@@ -122,7 +169,52 @@ class PacienteController extends Controller
             'sem_representante'=> ['boolean'],
             'ativo'            => ['boolean'],
             'observacoes'      => ['nullable', 'string'],
+        ], [
+            'cpf.cpf'              => 'CPF inválido. Verifique os dígitos e tente novamente.',
+            'data_nascimento.before' => 'A data de nascimento deve ser anterior a hoje.',
         ]);
+
+        $validator->after(function ($v) use ($request, $paciente) {
+            $cpf = $request->input('cpf');
+            $rg  = $request->input('rg');
+            $cns = $request->input('cns');
+
+            if ($cpf && !$v->errors()->has('cpf')) {
+                $dupPaciente = Paciente::withTrashed()->where('cpf', $cpf)->where('id', '!=', $paciente->id)->first();
+                if ($dupPaciente) {
+                    $sufixo = $dupPaciente->trashed() ? ' (registro inativo)' : '';
+                    $v->errors()->add('cpf', "Este CPF já está cadastrado como Paciente: {$dupPaciente->nome}{$sufixo}.");
+                } else {
+                    $dupRep = Representante::where('cpf', $cpf)->first();
+                    if ($dupRep) {
+                        $v->errors()->add('cpf', "Este CPF já está cadastrado como Representante: {$dupRep->nome}. Verifique se não é um cadastro duplicado.");
+                    }
+                }
+            }
+
+            if ($cns && !$v->errors()->has('cns')) {
+                $dupCns = Paciente::withTrashed()->where('cns', $cns)->where('id', '!=', $paciente->id)->first();
+                if ($dupCns) {
+                    $sufixo = $dupCns->trashed() ? ' (registro inativo)' : '';
+                    $v->errors()->add('cns', "Este CNS (Cartão SUS) já está cadastrado como Paciente: {$dupCns->nome}{$sufixo}.");
+                }
+            }
+
+            if ($rg && !$v->errors()->has('rg')) {
+                $dupRgPac = Paciente::withTrashed()->where('rg', $rg)->where('id', '!=', $paciente->id)->first();
+                if ($dupRgPac) {
+                    $sufixo = $dupRgPac->trashed() ? ' (registro inativo)' : '';
+                    $v->errors()->add('rg', "Este RG já está cadastrado como Paciente: {$dupRgPac->nome}{$sufixo}.");
+                } else {
+                    $dupRgRep = Representante::where('rg', $rg)->first();
+                    if ($dupRgRep) {
+                        $v->errors()->add('rg', "Este RG já está cadastrado como Representante: {$dupRgRep->nome}.");
+                    }
+                }
+            }
+        });
+
+        $data = $validator->validate();
 
         $data['sem_representante'] = $request->boolean('sem_representante');
         $data['ativo']             = $request->boolean('ativo', true);
