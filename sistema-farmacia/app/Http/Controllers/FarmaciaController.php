@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CredenciaisFarmaciaMail;
 use App\Models\Farmacia;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class FarmaciaController extends Controller
 {
@@ -30,14 +34,44 @@ class FarmaciaController extends Controller
             'estado'      => ['nullable', 'string', 'size:2'],
             'telefone'    => ['nullable', 'string', 'max:20'],
             'email'       => ['nullable', 'email', 'max:255'],
+            'email_admin' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'nome_admin'  => ['required', 'string', 'max:255'],
         ]);
 
-        Farmacia::create([...$request->only([
+        $farmacia = Farmacia::create([...$request->only([
             'nome', 'cnpj', 'cnes', 'responsavel',
             'endereco', 'cidade', 'estado', 'telefone', 'email',
         ]), 'ativo' => true]);
 
-        return redirect()->route('farmacias.index')->with('success', 'Farmácia cadastrada com sucesso.');
+        // Gera senha aleatória e cria o usuário admin_farmacia
+        $senha = Str::password(12, true, true, false);
+
+        User::create([
+            'name'       => $request->nome_admin,
+            'email'      => $request->email_admin,
+            'password'   => bcrypt($senha),
+            'role'       => 'admin_farmacia',
+            'active'     => true,
+            'farmacia_id'=> $farmacia->id,
+        ]);
+
+        // Envia as credenciais por e-mail
+        try {
+            Mail::to($request->email_admin)->send(new CredenciaisFarmaciaMail(
+                farmacia:   $farmacia,
+                emailAdmin: $request->email_admin,
+                nomeAdmin:  $request->nome_admin,
+                senha:      $senha,
+                urlSistema: config('app.url'),
+            ));
+            $emailMsg = "Credenciais enviadas para {$request->email_admin}.";
+        } catch (\Exception $e) {
+            // Não falha o cadastro se o email não sair
+            $emailMsg = "Farmácia cadastrada, mas o e-mail não pôde ser enviado. Senha gerada: <strong>{$senha}</strong>";
+        }
+
+        return redirect()->route('farmacias.index')
+            ->with('success', "Farmácia cadastrada com sucesso. {$emailMsg}");
     }
 
     public function edit(Farmacia $farmacia)
