@@ -47,7 +47,7 @@ class Lote extends Model
 
     public function estaVencido(): bool
     {
-        return $this->validade->isPast();
+        return $this->validade !== null && $this->validade->isPast();
     }
 
     public function temEstoque(): bool

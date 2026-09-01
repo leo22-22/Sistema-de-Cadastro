@@ -18,9 +18,10 @@ class RndsController extends Controller {
         $data = $request->validate([
             'cnpj'            => 'nullable|string|max:20',
             'cpf_habilitador' => 'nullable|string|max:14',
-            'ambiente'        => 'required|in:homologacao,producao',
+            'ambiente'        => 'nullable|in:homologacao,producao',
             'ativo'           => 'boolean',
         ]);
+        $data['ambiente'] = $data['ambiente'] ?? $this->loadConfig()['ambiente'] ?? 'homologacao';
         $data['ativo'] = $request->boolean('ativo');
         $data['updated_at'] = now()->toIso8601String();
         file_put_contents($this->configPath, json_encode($data, JSON_PRETTY_PRINT));

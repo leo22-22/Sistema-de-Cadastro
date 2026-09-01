@@ -13,7 +13,7 @@ class AuditoriaController extends Controller
 
         $query = ActivityLog::with('usuario', 'farmacia')->latest();
 
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             $query->where('farmacia_id', $user->farmacia_id);
         }
 

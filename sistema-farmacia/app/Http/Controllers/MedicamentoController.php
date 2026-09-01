@@ -34,7 +34,7 @@ class MedicamentoController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nome'               => ['required', 'string', 'max:255'],
+            'nome'               => ['nullable', 'string', 'max:255'],
             'principio_ativo'    => ['nullable', 'string', 'max:255'],
             'dosagem'            => ['nullable', 'string', 'max:100'],
             'forma_farmaceutica' => ['nullable', 'in:' . implode(',', array_keys(Medicamento::$formasFarmaceuticas))],
@@ -67,7 +67,7 @@ class MedicamentoController extends Controller
     public function update(Request $request, Medicamento $medicamento)
     {
         $data = $request->validate([
-            'nome'               => ['required', 'string', 'max:255'],
+            'nome'               => ['nullable', 'string', 'max:255'],
             'principio_ativo'    => ['nullable', 'string', 'max:255'],
             'dosagem'            => ['nullable', 'string', 'max:100'],
             'forma_farmaceutica' => ['nullable', 'in:' . implode(',', array_keys(Medicamento::$formasFarmaceuticas))],

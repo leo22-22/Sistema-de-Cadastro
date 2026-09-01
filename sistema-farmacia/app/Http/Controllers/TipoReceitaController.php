@@ -20,14 +20,14 @@ class TipoReceitaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nome'             => ['required', 'string', 'max:255'],
+        $data = $request->validate([
+            'nome'             => ['nullable', 'string', 'max:255'],
             'descricao'        => ['nullable', 'string'],
-            'cor'              => ['required', 'string', 'in:primary,secondary,success,danger,warning,info,dark'],
+            'cor'              => ['nullable', 'string', 'in:primary,secondary,success,danger,warning,info,dark'],
             'requer_retencao'  => ['boolean'],
         ]);
 
-        TipoReceita::create(array_merge($request->except('requer_retencao'), [
+        TipoReceita::create(array_merge($data, [
             'requer_retencao' => $request->boolean('requer_retencao'),
         ]));
 
@@ -41,15 +41,15 @@ class TipoReceitaController extends Controller
 
     public function update(Request $request, TipoReceita $tipos_receita)
     {
-        $request->validate([
-            'nome'            => ['required', 'string', 'max:255'],
+        $data = $request->validate([
+            'nome'            => ['nullable', 'string', 'max:255'],
             'descricao'       => ['nullable', 'string'],
-            'cor'             => ['required', 'string', 'in:primary,secondary,success,danger,warning,info,dark'],
+            'cor'             => ['nullable', 'string', 'in:primary,secondary,success,danger,warning,info,dark'],
             'requer_retencao' => ['boolean'],
             'ativo'           => ['boolean'],
         ]);
 
-        $tipos_receita->update(array_merge($request->except(['requer_retencao', 'ativo']), [
+        $tipos_receita->update(array_merge($data, [
             'requer_retencao' => $request->boolean('requer_retencao'),
             'ativo'           => $request->boolean('ativo', true),
         ]));

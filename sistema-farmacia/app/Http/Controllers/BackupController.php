@@ -5,8 +5,10 @@ use Illuminate\Support\Facades\Artisan;
 
 class BackupController extends Controller {
     public function index() {
+        $user = auth()->user();
+        abort_unless($user->isSuperadmin() || $user->isAdminFarmacia(), 403);
         $backups = $this->listBackups();
-        $isSuperadmin = auth()->user()->isSuperadmin();
+        $isSuperadmin = $user->isSuperadmin();
         return view('superadmin.backup', compact('backups', 'isSuperadmin'));
     }
 

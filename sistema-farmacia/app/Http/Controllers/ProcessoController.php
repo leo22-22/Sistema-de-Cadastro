@@ -13,6 +13,7 @@ use App\Models\TipoRelacaoRemessa;
 use App\Notifications\ProcessoStatusNotification;
 use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProcessoController extends Controller
@@ -20,10 +21,18 @@ class ProcessoController extends Controller
     private function escopoFarmacia($query)
     {
         $user = auth()->user();
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             $query->where('farmacia_id', $user->farmacia_id);
         }
         return $query;
+    }
+
+    private function autorizarProcesso(Processo $processo): void
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin()) {
+            abort_if($processo->farmacia_id !== $user->farmacia_id, 403);
+        }
     }
 
     public function index(Request $request)
@@ -68,9 +77,9 @@ class ProcessoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tipo_processo'            => ['required', 'in:abertura,retratado,transferencia,renovacao,continuidade'],
-            'paciente_id'              => ['required', 'exists:pacientes,id'],
-            'cid10_id'                 => ['required', 'exists:cid10,id'],
+            'tipo_processo'            => ['nullable', 'in:abertura,retratado,transferencia,renovacao,continuidade'],
+            'paciente_id'              => ['nullable', 'exists:pacientes,id'],
+            'cid10_id'                 => ['nullable', 'exists:cid10,id'],
             'medico_prescritor_id'     => ['nullable', 'exists:medicos_prescritores,id'],
             'tipo_receita_id'          => ['nullable', 'exists:tipos_receita,id'],
             'tipo_relacao_remessa_id'  => ['nullable', 'exists:tipos_relacao_remessa,id'],
@@ -82,47 +91,51 @@ class ProcessoController extends Controller
             'receita_entregue'         => ['boolean'],
             'exame_entregue'           => ['boolean'],
             'documentos_entregues'     => ['boolean'],
-            'medicamentos'             => ['required', 'array', 'min:1'],
+            'medicamentos'             => ['nullable', 'array'],
             'medicamentos.*.id'           => ['required', 'exists:medicamentos,id'],
-            'medicamentos.*.periodicidade'=> ['required', 'in:mensal,bimestral,trimestral'],
+            'medicamentos.*.periodicidade'=> ['nullable', 'in:mensal,bimestral,trimestral'],
             'medicamentos.*.quantidade_diaria' => ['nullable', 'numeric', 'min:0.1'],
             'medicamentos.*.quantidade_mensal' => ['nullable', 'integer', 'min:1'],
             'medicamentos.*.posologia'    => ['nullable', 'string', 'max:255'],
             'medicamentos.*.observacoes'  => ['nullable', 'string', 'max:255'],
         ]);
 
-        $processo = Processo::create([
-            'numero'                  => Processo::gerarNumero(),
-            'tipo_processo'           => $request->tipo_processo,
-            'paciente_id'             => $request->paciente_id,
-            'cid10_id'                => $request->cid10_id,
-            'medico_prescritor_id'    => $request->medico_prescritor_id,
-            'tipo_receita_id'         => $request->tipo_receita_id,
-            'tipo_relacao_remessa_id' => $request->tipo_relacao_remessa_id,
-            'numero_receita'          => $request->numero_receita,
-            'data_receita'            => $request->data_receita,
-            'data_validade_receita'   => $request->data_validade_receita,
-            'lme_entregue'            => $request->boolean('lme_entregue'),
-            'receita_entregue'        => $request->boolean('receita_entregue'),
-            'exame_entregue'          => $request->boolean('exame_entregue'),
-            'documentos_entregues'    => $request->boolean('documentos_entregues'),
-            'observacoes'             => $request->observacoes,
-            'status'                  => 'aberto',
-            'created_by'              => auth()->id(),
-            'farmacia_id'             => auth()->user()->farmacia_id,
-        ]);
-
-        foreach ($request->medicamentos as $item) {
-            $processo->medicamentos()->attach($item['id'], [
-                'periodicidade'     => $item['periodicidade'] ?? 'mensal',
-                'quantidade_diaria' => $item['quantidade_diaria'] ?? null,
-                'quantidade_mensal' => $item['quantidade_mensal'] ?? null,
-                'posologia'         => $item['posologia'] ?? null,
-                'observacoes'       => $item['observacoes'] ?? null,
+        $processo = DB::transaction(function () use ($request) {
+            $processo = Processo::create([
+                'numero'                  => Processo::gerarNumero(),
+                'tipo_processo'           => $request->tipo_processo,
+                'paciente_id'             => $request->paciente_id,
+                'cid10_id'                => $request->cid10_id,
+                'medico_prescritor_id'    => $request->medico_prescritor_id,
+                'tipo_receita_id'         => $request->tipo_receita_id,
+                'tipo_relacao_remessa_id' => $request->tipo_relacao_remessa_id,
+                'numero_receita'          => $request->numero_receita,
+                'data_receita'            => $request->data_receita,
+                'data_validade_receita'   => $request->data_validade_receita,
+                'lme_entregue'            => $request->boolean('lme_entregue'),
+                'receita_entregue'        => $request->boolean('receita_entregue'),
+                'exame_entregue'          => $request->boolean('exame_entregue'),
+                'documentos_entregues'    => $request->boolean('documentos_entregues'),
+                'observacoes'             => $request->observacoes,
+                'status'                  => 'aberto',
+                'created_by'              => auth()->id(),
+                'farmacia_id'             => auth()->user()->farmacia_id,
             ]);
-        }
 
-        AuditoriaService::log('criar', "Processo {$processo->numero} criado para paciente {$processo->paciente->nome}", 'Processo', $processo->id);
+            foreach ($request->medicamentos ?? [] as $item) {
+                $processo->medicamentos()->attach($item['id'], [
+                    'periodicidade'     => $item['periodicidade'] ?? 'mensal',
+                    'quantidade_diaria' => $item['quantidade_diaria'] ?? null,
+                    'quantidade_mensal' => $item['quantidade_mensal'] ?? null,
+                    'posologia'         => $item['posologia'] ?? null,
+                    'observacoes'       => $item['observacoes'] ?? null,
+                ]);
+            }
+
+            return $processo;
+        });
+
+        AuditoriaService::log('criar', "Processo {$processo->numero} criado para paciente " . ($processo->paciente->nome ?? 'não informado'), 'Processo', $processo->id);
 
         return redirect()->route('processos.show', $processo)
             ->with('success', 'Processo aberto com sucesso.');
@@ -130,6 +143,8 @@ class ProcessoController extends Controller
 
     public function show(Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         $processo->load([
             'paciente.representantes',
             'cid10',
@@ -146,6 +161,8 @@ class ProcessoController extends Controller
 
     public function edit(Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         if (in_array($processo->status, ['cancelado'])) {
             return back()->with('error', 'Processos cancelados não podem ser editados.');
         }
@@ -167,14 +184,16 @@ class ProcessoController extends Controller
 
     public function update(Request $request, Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         if ($processo->status === 'cancelado') {
             return back()->with('error', 'Processos cancelados não podem ser editados.');
         }
 
         $request->validate([
-            'tipo_processo'            => ['required', 'in:abertura,retratado,transferencia,renovacao,continuidade'],
-            'paciente_id'              => ['required', 'exists:pacientes,id'],
-            'cid10_id'                 => ['required', 'exists:cid10,id'],
+            'tipo_processo'            => ['nullable', 'in:abertura,retratado,transferencia,renovacao,continuidade'],
+            'paciente_id'              => ['nullable', 'exists:pacientes,id'],
+            'cid10_id'                 => ['nullable', 'exists:cid10,id'],
             'medico_prescritor_id'     => ['nullable', 'exists:medicos_prescritores,id'],
             'tipo_receita_id'          => ['nullable', 'exists:tipos_receita,id'],
             'tipo_relacao_remessa_id'  => ['nullable', 'exists:tipos_relacao_remessa,id'],
@@ -187,9 +206,9 @@ class ProcessoController extends Controller
             'receita_entregue'         => ['boolean'],
             'exame_entregue'           => ['boolean'],
             'documentos_entregues'     => ['boolean'],
-            'medicamentos'             => ['required', 'array', 'min:1'],
+            'medicamentos'             => ['nullable', 'array'],
             'medicamentos.*.id'           => ['required', 'exists:medicamentos,id'],
-            'medicamentos.*.periodicidade'=> ['required', 'in:mensal,bimestral,trimestral'],
+            'medicamentos.*.periodicidade'=> ['nullable', 'in:mensal,bimestral,trimestral'],
             'medicamentos.*.quantidade_diaria' => ['nullable', 'numeric', 'min:0.1'],
             'medicamentos.*.quantidade_mensal' => ['nullable', 'integer', 'min:1'],
             'medicamentos.*.posologia'    => ['nullable', 'string', 'max:255'],
@@ -201,36 +220,38 @@ class ProcessoController extends Controller
             ? \Carbon\Carbon::parse($dataPrimeiraRetirada)->addMonths(6)->toDateString()
             : null;
 
-        $processo->update([
-            'tipo_processo'           => $request->tipo_processo,
-            'paciente_id'             => $request->paciente_id,
-            'cid10_id'                => $request->cid10_id,
-            'medico_prescritor_id'    => $request->medico_prescritor_id,
-            'tipo_receita_id'         => $request->tipo_receita_id,
-            'tipo_relacao_remessa_id' => $request->tipo_relacao_remessa_id,
-            'numero_receita'          => $request->numero_receita,
-            'data_receita'            => $request->data_receita,
-            'data_validade_receita'   => $request->data_validade_receita,
-            'data_primeira_retirada'  => $dataPrimeiraRetirada,
-            'validade_apac'           => $validadeApac,
-            'lme_entregue'            => $request->boolean('lme_entregue'),
-            'receita_entregue'        => $request->boolean('receita_entregue'),
-            'exame_entregue'          => $request->boolean('exame_entregue'),
-            'documentos_entregues'    => $request->boolean('documentos_entregues'),
-            'observacoes'             => $request->observacoes,
-        ]);
+        DB::transaction(function () use ($request, $processo, $dataPrimeiraRetirada, $validadeApac) {
+            $processo->update([
+                'tipo_processo'           => $request->tipo_processo,
+                'paciente_id'             => $request->paciente_id,
+                'cid10_id'                => $request->cid10_id,
+                'medico_prescritor_id'    => $request->medico_prescritor_id,
+                'tipo_receita_id'         => $request->tipo_receita_id,
+                'tipo_relacao_remessa_id' => $request->tipo_relacao_remessa_id,
+                'numero_receita'          => $request->numero_receita,
+                'data_receita'            => $request->data_receita,
+                'data_validade_receita'   => $request->data_validade_receita,
+                'data_primeira_retirada'  => $dataPrimeiraRetirada,
+                'validade_apac'           => $validadeApac,
+                'lme_entregue'            => $request->boolean('lme_entregue'),
+                'receita_entregue'        => $request->boolean('receita_entregue'),
+                'exame_entregue'          => $request->boolean('exame_entregue'),
+                'documentos_entregues'    => $request->boolean('documentos_entregues'),
+                'observacoes'             => $request->observacoes,
+            ]);
 
-        $sync = [];
-        foreach ($request->medicamentos as $item) {
-            $sync[$item['id']] = [
-                'periodicidade'     => $item['periodicidade'] ?? 'mensal',
-                'quantidade_diaria' => $item['quantidade_diaria'] ?? null,
-                'quantidade_mensal' => $item['quantidade_mensal'] ?? null,
-                'posologia'         => $item['posologia'] ?? null,
-                'observacoes'       => $item['observacoes'] ?? null,
-            ];
-        }
-        $processo->medicamentos()->sync($sync);
+            $sync = [];
+            foreach ($request->medicamentos ?? [] as $item) {
+                $sync[$item['id']] = [
+                    'periodicidade'     => $item['periodicidade'] ?? 'mensal',
+                    'quantidade_diaria' => $item['quantidade_diaria'] ?? null,
+                    'quantidade_mensal' => $item['quantidade_mensal'] ?? null,
+                    'posologia'         => $item['posologia'] ?? null,
+                    'observacoes'       => $item['observacoes'] ?? null,
+                ];
+            }
+            $processo->medicamentos()->sync($sync);
+        });
 
         AuditoriaService::log('editar', "Processo {$processo->numero} atualizado", 'Processo', $processo->id);
 
@@ -240,6 +261,8 @@ class ProcessoController extends Controller
 
     public function destroy(Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         if ($processo->recibos()->exists()) {
             return back()->with('error', 'Não é possível excluir um processo com recibos gerados.');
         }
@@ -254,12 +277,22 @@ class ProcessoController extends Controller
 
     public function atualizarStatus(Request $request, Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         $request->validate(['status' => ['required', 'in:aberto,em_andamento,concluido,cancelado']]);
 
         $novoStatus = $request->status;
 
+        if ($processo->status === 'cancelado') {
+            return back()->with('error', 'Um processo cancelado não pode ter o status alterado.');
+        }
+
         if ($novoStatus === 'cancelado' && !$processo->podeCancelar()) {
             return back()->with('error', 'Este processo não pode ser cancelado.');
+        }
+
+        if ($novoStatus === 'concluido' && !$processo->podeConcluir()) {
+            return back()->with('error', 'Este processo não pode ser concluído no status atual.');
         }
 
         $updates = [
@@ -289,6 +322,8 @@ class ProcessoController extends Controller
 
     public function uploadDocumento(Request $request, Processo $processo)
     {
+        $this->autorizarProcesso($processo);
+
         $request->validate([
             'tipo'    => ['required', 'in:lme,receita,exame,documento_pessoal,outro'],
             'arquivo' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
@@ -322,6 +357,9 @@ class ProcessoController extends Controller
 
     public function deleteDocumento(Processo $processo, ProcessoDocumento $documento)
     {
+        $this->autorizarProcesso($processo);
+        abort_if($documento->processo_id !== $processo->id, 404);
+
         Storage::delete($documento->arquivo);
         $documento->delete();
         return back()->with('success', 'Documento removido.');
@@ -329,33 +367,39 @@ class ProcessoController extends Controller
 
     public function renovar(Processo $processo)
     {
-        $novo = Processo::create([
-            'numero'                  => Processo::gerarNumero(),
-            'tipo_processo'           => 'renovacao',
-            'paciente_id'             => $processo->paciente_id,
-            'cid10_id'                => $processo->cid10_id,
-            'medico_prescritor_id'    => $processo->medico_prescritor_id,
-            'tipo_receita_id'         => $processo->tipo_receita_id,
-            'tipo_relacao_remessa_id' => $processo->tipo_relacao_remessa_id,
-            'observacoes'             => $processo->observacoes,
-            'lme_entregue'            => false,
-            'receita_entregue'        => false,
-            'exame_entregue'          => false,
-            'documentos_entregues'    => false,
-            'status'                  => 'aberto',
-            'created_by'              => auth()->id(),
-            'farmacia_id'             => auth()->user()->farmacia_id,
-        ]);
+        $this->autorizarProcesso($processo);
 
-        foreach ($processo->medicamentos as $med) {
-            $novo->medicamentos()->attach($med->id, [
-                'periodicidade'     => $med->pivot->periodicidade,
-                'quantidade_diaria' => $med->pivot->quantidade_diaria,
-                'quantidade_mensal' => $med->pivot->quantidade_mensal,
-                'posologia'         => $med->pivot->posologia,
-                'observacoes'       => $med->pivot->observacoes,
+        $novo = DB::transaction(function () use ($processo) {
+            $novo = Processo::create([
+                'numero'                  => Processo::gerarNumero(),
+                'tipo_processo'           => 'renovacao',
+                'paciente_id'             => $processo->paciente_id,
+                'cid10_id'                => $processo->cid10_id,
+                'medico_prescritor_id'    => $processo->medico_prescritor_id,
+                'tipo_receita_id'         => $processo->tipo_receita_id,
+                'tipo_relacao_remessa_id' => $processo->tipo_relacao_remessa_id,
+                'observacoes'             => $processo->observacoes,
+                'lme_entregue'            => false,
+                'receita_entregue'        => false,
+                'exame_entregue'          => false,
+                'documentos_entregues'    => false,
+                'status'                  => 'aberto',
+                'created_by'              => auth()->id(),
+                'farmacia_id'             => $processo->farmacia_id,
             ]);
-        }
+
+            foreach ($processo->medicamentos as $med) {
+                $novo->medicamentos()->attach($med->id, [
+                    'periodicidade'     => $med->pivot->periodicidade,
+                    'quantidade_diaria' => $med->pivot->quantidade_diaria,
+                    'quantidade_mensal' => $med->pivot->quantidade_mensal,
+                    'posologia'         => $med->pivot->posologia,
+                    'observacoes'       => $med->pivot->observacoes,
+                ]);
+            }
+
+            return $novo;
+        });
 
         AuditoriaService::log('renovar', "Processo {$novo->numero} criado por renovação de {$processo->numero}", 'Processo', $novo->id);
 

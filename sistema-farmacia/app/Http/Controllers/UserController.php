@@ -6,6 +6,7 @@ use App\Models\Farmacia;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
@@ -43,12 +44,13 @@ class UserController extends Controller
 
         $request->validate([
             'name'         => ['required', 'string', 'max:255'],
-            'email'        => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email'        => ['required', 'string', 'email', 'max:255', Rule::unique('users')->whereNull('deleted_at')],
             'role'         => ['required', 'in:' . implode(',', $rolesPermitidos)],
-            'farmacia_id'  => ['nullable', 'exists:farmacias,id'],
+            'farmacia_id'  => [Rule::requiredIf($request->role !== 'superadmin'), 'nullable', 'exists:farmacias,id'],
             'password'     => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
-            'email.unique' => 'Este e-mail já está cadastrado para outro usuário do sistema.',
+            'email.unique'       => 'Este e-mail já está cadastrado para outro usuário do sistema.',
+            'farmacia_id.required' => 'Selecione a farmácia deste usuário.',
         ]);
 
         $farmaciaId = $user->isSuperadmin()
@@ -90,10 +92,12 @@ class UserController extends Controller
 
         $request->validate([
             'name'        => ['required', 'string', 'max:255'],
-            'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $usuario->id],
+            'email'       => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($usuario->id)->whereNull('deleted_at')],
             'role'        => ['required', 'in:' . implode(',', $rolesPermitidos)],
-            'farmacia_id' => ['nullable', 'exists:farmacias,id'],
+            'farmacia_id' => [Rule::requiredIf($request->role !== 'superadmin'), 'nullable', 'exists:farmacias,id'],
             'active'      => ['boolean'],
+        ], [
+            'farmacia_id.required' => 'Selecione a farmácia deste usuário.',
         ]);
 
         $data = $request->only(['name', 'email', 'role']);

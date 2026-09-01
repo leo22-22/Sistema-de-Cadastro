@@ -40,7 +40,7 @@ class PacienteController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nome'             => ['required', 'string', 'max:255'],
+            'nome'             => ['nullable', 'string', 'max:255'],
             'nome_mae'         => ['nullable', 'string', 'max:255'],
             'cpf'              => ['nullable', 'string', 'max:14', 'cpf'],
             'rg'               => ['nullable', 'string', 'max:20'],
@@ -147,7 +147,7 @@ class PacienteController extends Controller
     public function update(Request $request, Paciente $paciente)
     {
         $validator = Validator::make($request->all(), [
-            'nome'             => ['required', 'string', 'max:255'],
+            'nome'             => ['nullable', 'string', 'max:255'],
             'nome_mae'         => ['nullable', 'string', 'max:255'],
             'cpf'              => ['nullable', 'string', 'max:14', 'cpf'],
             'rg'               => ['nullable', 'string', 'max:20'],

@@ -11,9 +11,9 @@ class AlergiaController extends Controller
     public function store(Request $request, Paciente $paciente)
     {
         $request->validate([
-            'tipo'      => ['required', 'in:medicamento,substancia,alimento,outro'],
-            'descricao' => ['required', 'string', 'max:255'],
-            'gravidade' => ['required', 'in:leve,moderada,grave,nao_informada'],
+            'tipo'      => ['nullable', 'in:medicamento,substancia,alimento,outro'],
+            'descricao' => ['nullable', 'string', 'max:255'],
+            'gravidade' => ['nullable', 'in:leve,moderada,grave,nao_informada'],
             'reacao'    => ['nullable', 'string', 'max:500'],
         ]);
 

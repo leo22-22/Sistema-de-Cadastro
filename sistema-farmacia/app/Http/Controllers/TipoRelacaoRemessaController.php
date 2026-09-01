@@ -20,12 +20,12 @@ class TipoRelacaoRemessaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nome'      => ['required', 'string', 'max:255'],
+        $data = $request->validate([
+            'nome'      => ['nullable', 'string', 'max:255'],
             'descricao' => ['nullable', 'string'],
         ]);
 
-        TipoRelacaoRemessa::create($request->all());
+        TipoRelacaoRemessa::create($data);
 
         return redirect()->route('tipos-relacao-remessa.index')->with('success', 'Tipo de relação/remessa cadastrado com sucesso.');
     }
@@ -37,13 +37,13 @@ class TipoRelacaoRemessaController extends Controller
 
     public function update(Request $request, TipoRelacaoRemessa $tipos_relacao_remessa)
     {
-        $request->validate([
-            'nome'      => ['required', 'string', 'max:255'],
+        $data = $request->validate([
+            'nome'      => ['nullable', 'string', 'max:255'],
             'descricao' => ['nullable', 'string'],
             'ativo'     => ['boolean'],
         ]);
 
-        $tipos_relacao_remessa->update(array_merge($request->except('ativo'), [
+        $tipos_relacao_remessa->update(array_merge($data, [
             'ativo' => $request->boolean('ativo', true),
         ]));
 

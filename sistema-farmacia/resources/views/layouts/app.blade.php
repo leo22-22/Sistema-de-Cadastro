@@ -883,9 +883,22 @@ function sbToggle() {
     msgs.forEach(function(m) {
         var el = document.createElement('div');
         el.className = 'app-toast toast-' + m.type;
-        el.innerHTML = '<i class="bi ' + m.icon + ' t-icon"></i>'
-            + '<div class="t-body">' + m.text + '</div>'
-            + '<button class="t-close" onclick="this.closest(\'.app-toast\').remove()">&times;</button>';
+
+        var icon = document.createElement('i');
+        icon.className = 'bi ' + m.icon + ' t-icon';
+
+        var body = document.createElement('div');
+        body.className = 't-body';
+        body.textContent = m.text;
+
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 't-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.addEventListener('click', function () { el.remove(); });
+
+        el.appendChild(icon);
+        el.appendChild(body);
+        el.appendChild(closeBtn);
         document.getElementById('toast-stack').appendChild(el);
         setTimeout(function() { el.style.opacity='0'; el.style.transform='translateX(12px)'; }, 4500);
         setTimeout(function() { el.remove(); }, 4850);

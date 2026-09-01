@@ -8,13 +8,14 @@ use App\Models\Recibo;
 use App\Models\Representante;
 use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReciboController extends Controller
 {
     private function autorizarRecibo(Recibo $recibo): void
     {
         $user = auth()->user();
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             abort_if($recibo->processo->farmacia_id !== $user->farmacia_id, 403);
         }
     }
@@ -22,7 +23,7 @@ class ReciboController extends Controller
     private function autorizarProcesso(Processo $processo): void
     {
         $user = auth()->user();
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             abort_if($processo->farmacia_id !== $user->farmacia_id, 403);
         }
     }
@@ -32,7 +33,7 @@ class ReciboController extends Controller
         $user  = auth()->user();
         $query = Recibo::with(['processo.paciente', 'medicamento', 'geradoPor']);
 
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             $farmaciaId = $user->farmacia_id;
             $query->whereHas('processo', fn($q) => $q->where('farmacia_id', $farmaciaId));
         }
@@ -95,36 +96,44 @@ class ReciboController extends Controller
 
         if ($lote) {
             if ($lote->estaVencido()) {
-                return back()->with('error', "Lote {$lote->lote} está vencido desde {$lote->validade->format('d/m/Y')}. Selecione outro lote.");
+                return back()->with('error', 'Lote ' . e($lote->lote) . ' está vencido desde ' . $lote->validade->format('d/m/Y') . '. Selecione outro lote.');
             }
             if ($lote->quantidade_atual < $request->quantidade) {
                 return back()->with('error', "Estoque insuficiente. Disponível: {$lote->quantidade_atual} unidades.");
             }
-            $lote->decrement('quantidade_atual', $request->quantidade);
         }
 
-        if (!$processo->data_primeira_retirada) {
-            $processo->update([
-                'data_primeira_retirada' => now()->toDateString(),
-                'validade_apac'          => now()->addMonths(6)->toDateString(),
-                'status'                 => 'em_andamento',
+        $recibo = DB::transaction(function () use ($request, $processo, $lote) {
+            if ($lote) {
+                $atualizado = Lote::where('id', $lote->id)
+                    ->where('quantidade_atual', '>=', $request->quantidade)
+                    ->decrement('quantidade_atual', $request->quantidade);
+                abort_if($atualizado === 0, 409, 'Estoque insuficiente para este lote.');
+            }
+
+            if (!$processo->data_primeira_retirada) {
+                $processo->update([
+                    'data_primeira_retirada' => now()->toDateString(),
+                    'validade_apac'          => now()->addMonths(6)->toDateString(),
+                    'status'                 => 'em_andamento',
+                ]);
+            }
+
+            return Recibo::create([
+                'numero'                    => Recibo::gerarNumero(),
+                'processo_id'               => $processo->id,
+                'medicamento_id'            => $request->medicamento_id,
+                'lote_id'                   => $request->lote_id,
+                'mes_referencia'            => $request->mes_referencia,
+                'quantidade'                => $request->quantidade,
+                'data_emissao'              => now()->toDateString(),
+                'validade_apac'             => $processo->fresh()->validade_apac?->toDateString(),
+                'retirado_por_representante'=> $request->boolean('retirado_por_representante'),
+                'representante_id'          => $request->boolean('retirado_por_representante') ? $request->representante_id : null,
+                'observacoes'               => $request->observacoes,
+                'gerado_por'                => auth()->id(),
             ]);
-        }
-
-        $recibo = Recibo::create([
-            'numero'                    => Recibo::gerarNumero(),
-            'processo_id'               => $processo->id,
-            'medicamento_id'            => $request->medicamento_id,
-            'lote_id'                   => $request->lote_id,
-            'mes_referencia'            => $request->mes_referencia,
-            'quantidade'                => $request->quantidade,
-            'data_emissao'              => now()->toDateString(),
-            'validade_apac'             => $processo->fresh()->validade_apac?->toDateString(),
-            'retirado_por_representante'=> $request->boolean('retirado_por_representante'),
-            'representante_id'          => $request->boolean('retirado_por_representante') ? $request->representante_id : null,
-            'observacoes'               => $request->observacoes,
-            'gerado_por'                => auth()->id(),
-        ]);
+        });
 
         AuditoriaService::log('dispensar', "Dispensação {$recibo->numero}: {$recibo->quantidade}x {$recibo->medicamento->nome} — Processo {$processo->numero}", 'Recibo', $recibo->id);
 

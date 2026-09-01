@@ -30,7 +30,7 @@ class MedicoPrescritController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nome'           => ['required', 'string', 'max:255'],
+            'nome'           => ['nullable', 'string', 'max:255'],
             'crm'            => ['nullable', 'string', 'max:20', 'crm'],
             'cns'            => ['nullable', 'string', 'max:20'],
             'cnes'           => ['nullable', 'string', 'max:7'],
@@ -83,7 +83,7 @@ class MedicoPrescritController extends Controller
     public function update(Request $request, MedicoPrescritor $medico)
     {
         $validator = Validator::make($request->all(), [
-            'nome'           => ['required', 'string', 'max:255'],
+            'nome'           => ['nullable', 'string', 'max:255'],
             'crm'            => ['nullable', 'string', 'max:20', 'crm'],
             'cns'            => ['nullable', 'string', 'max:20'],
             'cnes'           => ['nullable', 'string', 'max:7'],

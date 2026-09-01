@@ -10,11 +10,11 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome'      => ['required', 'string', 'max:255'],
-            'email'     => ['required', 'email', 'max:255'],
-            'telefone'  => ['required', 'string', 'max:20'],
-            'municipio' => ['required', 'string', 'max:255'],
-            'estado'    => ['required', 'string', 'size:2'],
+            'nome'      => ['nullable', 'string', 'max:255'],
+            'email'     => ['nullable', 'email', 'max:255'],
+            'telefone'  => ['nullable', 'string', 'max:20'],
+            'municipio' => ['nullable', 'string', 'max:255'],
+            'estado'    => ['nullable', 'string', 'size:2'],
             'mensagem'  => ['nullable', 'string', 'max:1000'],
         ]);
 

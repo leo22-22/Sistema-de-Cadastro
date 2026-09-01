@@ -12,10 +12,18 @@ class LoteController extends Controller
     private function escopoFarmacia($query)
     {
         $user = auth()->user();
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             $query->where('farmacia_id', $user->farmacia_id);
         }
         return $query;
+    }
+
+    private function autorizarLote(Lote $lote): void
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin()) {
+            abort_if($lote->farmacia_id !== $user->farmacia_id, 403);
+        }
     }
 
     public function index(Request $request)
@@ -40,20 +48,22 @@ class LoteController extends Controller
 
     public function store(Request $request)
     {
+        $farmaciaId = auth()->user()->farmacia_id;
+
         $data = $request->validate([
-            'medicamento_id'    => 'required|exists:medicamentos,id',
-            'lote'              => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $request->medicamento_id)],
-            'validade'          => 'required|date|after:today',
-            'quantidade_inicial'=> 'required|integer|min:1',
-            'data_entrada'      => 'required|date|before_or_equal:today',
+            'medicamento_id'    => 'nullable|exists:medicamentos,id',
+            'lote'              => ['nullable', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $request->medicamento_id)->where('farmacia_id', $farmaciaId)],
+            'validade'          => 'nullable|date',
+            'quantidade_inicial'=> 'nullable|integer|min:0',
+            'data_entrada'      => 'nullable|date',
             'observacoes'       => 'nullable|string',
         ]);
 
-        $data['quantidade_atual'] = $data['quantidade_inicial'];
-        $data['farmacia_id']      = auth()->user()->farmacia_id;
+        $data['quantidade_atual'] = $data['quantidade_inicial'] ?? 0;
+        $data['farmacia_id']      = $farmaciaId;
         $data['created_by']       = auth()->id();
         $lote = Lote::create($data);
-        AuditoriaService::log('criar', "Lote {$lote->lote} cadastrado para {$lote->medicamento->nome}", 'Lote', $lote->id);
+        AuditoriaService::log('criar', "Lote {$lote->lote} cadastrado para " . ($lote->medicamento->nome ?? 'medicamento não informado'), 'Lote', $lote->id);
 
         return redirect()->route('lotes.index')
             ->with('success', 'Lote cadastrado com sucesso.');
@@ -61,21 +71,25 @@ class LoteController extends Controller
 
     public function show(Lote $lote)
     {
+        $this->autorizarLote($lote);
         $lote->load('medicamento', 'recibos.processo.paciente');
         return view('lotes.show', compact('lote'));
     }
 
     public function edit(Lote $lote)
     {
+        $this->autorizarLote($lote);
         $medicamentos = Medicamento::ativo()->orderBy('nome')->get();
         return view('lotes.edit', compact('lote', 'medicamentos'));
     }
 
     public function update(Request $request, Lote $lote)
     {
+        $this->autorizarLote($lote);
+
         $data = $request->validate([
-            'lote'          => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $lote->medicamento_id)->ignore($lote->id)],
-            'validade'      => 'required|date|after_or_equal:today',
+            'lote'          => ['nullable', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $lote->medicamento_id)->where('farmacia_id', $lote->farmacia_id)->ignore($lote->id)],
+            'validade'      => 'nullable|date',
             'observacoes'   => 'nullable|string',
         ]);
 
@@ -86,6 +100,8 @@ class LoteController extends Controller
 
     public function destroy(Lote $lote)
     {
+        $this->autorizarLote($lote);
+
         if ($lote->recibos()->exists()) {
             return back()->with('error', 'Lote possui dispensações registradas e não pode ser removido.');
         }

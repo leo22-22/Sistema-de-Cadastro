@@ -14,15 +14,16 @@ class LgpdController extends Controller
             abort(403, 'Acesso não autorizado.');
         }
 
-        $paciente->load([
-            'representantes',
-            'alergias',
-            'processos.cid10',
-            'processos.medicoPrescritor',
-            'processos.medicamentos',
-            'processos.recibos.medicamento',
-            'processos.recibos.geradoPor',
+        $paciente->load(['representantes', 'alergias']);
+
+        $processosQuery = $paciente->processos()->with([
+            'cid10', 'medicoPrescritor', 'medicamentos',
+            'recibos.medicamento', 'recibos.geradoPor',
         ]);
+        if (!$user->isSuperadmin()) {
+            $processosQuery->where('farmacia_id', $user->farmacia_id);
+        }
+        $paciente->setRelation('processos', $processosQuery->get());
 
         $dados = [
             'exportado_em'  => now()->toIso8601String(),

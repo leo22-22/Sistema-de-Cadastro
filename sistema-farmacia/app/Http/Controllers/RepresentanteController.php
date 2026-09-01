@@ -31,7 +31,7 @@ class RepresentanteController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nome'            => ['required', 'string', 'max:255'],
+            'nome'            => ['nullable', 'string', 'max:255'],
             'cpf'             => ['nullable', 'string', 'max:14', 'cpf'],
             'rg'              => ['nullable', 'string', 'max:20'],
             'telefone'        => ['nullable', 'string', 'max:20'],
@@ -99,7 +99,7 @@ class RepresentanteController extends Controller
     public function update(Request $request, Representante $representante)
     {
         $validator = Validator::make($request->all(), [
-            'nome'            => ['required', 'string', 'max:255'],
+            'nome'            => ['nullable', 'string', 'max:255'],
             'cpf'             => ['nullable', 'string', 'max:14', 'cpf'],
             'rg'              => ['nullable', 'string', 'max:20'],
             'telefone'        => ['nullable', 'string', 'max:20'],

@@ -13,7 +13,7 @@ class RelatorioController extends Controller
     private function escopoFarmacia($query, string $via = 'farmacia_id')
     {
         $user = auth()->user();
-        if (!$user->isSuperadmin() && $user->farmacia_id) {
+        if (!$user->isSuperadmin()) {
             $query->where($via, $user->farmacia_id);
         }
         return $query;
@@ -33,9 +33,11 @@ class RelatorioController extends Controller
             'data_ate' => 'nullable|date|after_or_equal:data_de',
         ]);
 
-        $query = $this->escopoFarmacia(
-            Recibo::with(['processo.paciente', 'medicamento', 'geradoPor'])
-        );
+        $user = auth()->user();
+        $query = Recibo::with(['processo.paciente', 'medicamento', 'geradoPor']);
+        if (!$user->isSuperadmin()) {
+            $query->whereHas('processo', fn($q) => $q->where('farmacia_id', $user->farmacia_id));
+        }
 
         if ($request->filled('data_de')) {
             $query->whereDate('created_at', '>=', $request->data_de);
@@ -148,14 +150,14 @@ class RelatorioController extends Controller
         $linhas = [];
         $linhas[] = ['Medicamento', 'Lote', 'Qtd Inicial', 'Qtd Atual', 'Validade', 'Entrada', 'Situação'];
         foreach ($lotes as $l) {
-            $situacao = $l->validade->isPast() ? 'Vencido' : ($l->quantidade_atual <= 0 ? 'Sem Estoque' : ($l->quantidade_atual <= 10 ? 'Baixo' : 'OK'));
+            $situacao = $l->validade?->isPast() ? 'Vencido' : ($l->quantidade_atual <= 0 ? 'Sem Estoque' : ($l->quantidade_atual <= 10 ? 'Baixo' : 'OK'));
             $linhas[] = [
                 $l->medicamento->nome ?? '',
                 $l->lote,
                 $l->quantidade_inicial,
                 $l->quantidade_atual,
-                $l->validade->format('d/m/Y'),
-                $l->data_entrada->format('d/m/Y'),
+                $l->validade?->format('d/m/Y') ?? '',
+                $l->data_entrada?->format('d/m/Y') ?? '',
                 $situacao,
             ];
         }

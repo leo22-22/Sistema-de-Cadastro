@@ -31,7 +31,7 @@ class Recibo extends Model
     public static function gerarNumero(): string
     {
         $ano = now()->year;
-        $ultimo = static::withTrashed()->whereYear('created_at', $ano)->count() + 1;
+        $ultimo = static::withTrashed()->whereYear('created_at', $ano)->lockForUpdate()->count() + 1;
         return sprintf('REC-%d-%04d', $ano, $ultimo);
     }
 
