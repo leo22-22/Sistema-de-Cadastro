@@ -36,13 +36,13 @@ class LoteController extends Controller
             $query->where('validade', '<', now());
         }
         $lotes = $query->latest()->paginate(20)->withQueryString();
-        $medicamentos = Medicamento::ativo()->orderBy('nome')->get();
+        $medicamentos = Medicamento::ativo()->where('farmacia_id', auth()->user()->farmacia_id)->orderBy('nome')->get();
         return view('lotes.index', compact('lotes', 'medicamentos'));
     }
 
     public function create()
     {
-        $medicamentos = Medicamento::ativo()->orderBy('nome')->get();
+        $medicamentos = Medicamento::ativo()->where('farmacia_id', auth()->user()->farmacia_id)->orderBy('nome')->get();
         return view('lotes.create', compact('medicamentos'));
     }
 
@@ -51,7 +51,7 @@ class LoteController extends Controller
         $farmaciaId = auth()->user()->farmacia_id;
 
         $data = $request->validate([
-            'medicamento_id'    => 'nullable|exists:medicamentos,id',
+            'medicamento_id'    => ['nullable', \Illuminate\Validation\Rule::exists('medicamentos', 'id')->where('farmacia_id', $farmaciaId)],
             'lote'              => ['nullable', 'string', 'max:50', \Illuminate\Validation\Rule::unique('lotes')->where('medicamento_id', $request->medicamento_id)->where('farmacia_id', $farmaciaId)],
             'validade'          => 'nullable|date',
             'quantidade_inicial'=> 'nullable|integer|min:0',
@@ -79,7 +79,7 @@ class LoteController extends Controller
     public function edit(Lote $lote)
     {
         $this->autorizarLote($lote);
-        $medicamentos = Medicamento::ativo()->orderBy('nome')->get();
+        $medicamentos = Medicamento::ativo()->where('farmacia_id', auth()->user()->farmacia_id)->orderBy('nome')->get();
         return view('lotes.edit', compact('lote', 'medicamentos'));
     }
 

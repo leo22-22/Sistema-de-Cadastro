@@ -1,9 +1,11 @@
 <x-app-layout>
     <div class="page-header d-flex justify-content-between align-items-center">
         <h4><i class="bi bi-truck me-2"></i>Tipos de Relação/Remessa</h4>
+        @if(auth()->user()->isAdminFarmacia())
         <a href="{{ route('tipos-relacao-remessa.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Novo Tipo
         </a>
+        @endif
     </div>
     <div class="card">
         <div class="table-responsive">
@@ -13,7 +15,9 @@
                         <th class="ps-3">Nome</th>
                         <th>Descrição</th>
                         <th class="text-center">Status</th>
+                        @if(auth()->user()->isAdminFarmacia())
                         <th class="pe-3 text-end">Ações</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -26,6 +30,7 @@
                                 {{ $tipo->ativo ? 'Ativo' : 'Inativo' }}
                             </span>
                         </td>
+                        @if(auth()->user()->isAdminFarmacia())
                         <td class="pe-3 text-end">
                             <a href="{{ route('tipos-relacao-remessa.edit', $tipo) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                             <form action="{{ route('tipos-relacao-remessa.destroy', $tipo) }}" method="POST" class="d-inline"
@@ -34,6 +39,7 @@
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
+                        @endif
                     </tr>
                     @empty
                     <tr><td colspan="4" class="text-center text-muted py-4">Nenhum tipo cadastrado.</td></tr>

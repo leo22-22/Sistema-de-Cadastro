@@ -44,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $totalUsuarios   = \App\Models\User::where('role', '!=', 'superadmin')->count();
             $totalProcessos  = Processo::count();
             $totalRecibos    = Recibo::count();
-            $totalMedicamentos = \App\Models\Medicamento::where('ativo', true)->count();
+            $totalMedicamentos = \App\Models\Medicamento::whereNotNull('farmacia_id')->where('ativo', true)->count();
             $ultimasFarmacias  = \App\Models\Farmacia::withCount('users')->latest()->take(6)->get();
 
             return view('dashboard-superadmin', compact(
@@ -159,6 +159,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'lotes.destroy',
     ]);
 
+    // Catálogo (cada farmácia gerencia o seu — só admin_farmacia cadastra/edita/exclui)
+    Route::resource('medicamentos', MedicamentoController::class);
+    Route::resource('tipos-receita', TipoReceitaController::class)->names([
+        'index'   => 'tipos-receita.index',
+        'create'  => 'tipos-receita.create',
+        'store'   => 'tipos-receita.store',
+        'edit'    => 'tipos-receita.edit',
+        'update'  => 'tipos-receita.update',
+        'destroy' => 'tipos-receita.destroy',
+    ]);
+    Route::resource('tipos-relacao-remessa', TipoRelacaoRemessaController::class)->names([
+        'index'   => 'tipos-relacao-remessa.index',
+        'create'  => 'tipos-relacao-remessa.create',
+        'store'   => 'tipos-relacao-remessa.store',
+        'edit'    => 'tipos-relacao-remessa.edit',
+        'update'  => 'tipos-relacao-remessa.update',
+        'destroy' => 'tipos-relacao-remessa.destroy',
+    ]);
+
     // Relatórios
     Route::get('relatorios', [RelatorioController::class, 'index'])->name('relatorios.index');
     Route::get('relatorios/dispensacoes', [RelatorioController::class, 'dispensacoes'])->name('relatorios.dispensacoes');
@@ -187,23 +206,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('farmacias', FarmaciaController::class)->except(['show']);
         Route::get('solicitacoes', [ContactController::class, 'index'])->name('contato.index');
         Route::patch('solicitacoes/{contactRequest}/lido', [ContactController::class, 'marcarLido'])->name('contato.lido');
-        Route::resource('medicamentos', MedicamentoController::class);
-        Route::resource('tipos-receita', TipoReceitaController::class)->names([
-            'index'   => 'tipos-receita.index',
-            'create'  => 'tipos-receita.create',
-            'store'   => 'tipos-receita.store',
-            'edit'    => 'tipos-receita.edit',
-            'update'  => 'tipos-receita.update',
-            'destroy' => 'tipos-receita.destroy',
-        ]);
-        Route::resource('tipos-relacao-remessa', TipoRelacaoRemessaController::class)->names([
-            'index'   => 'tipos-relacao-remessa.index',
-            'create'  => 'tipos-relacao-remessa.create',
-            'store'   => 'tipos-relacao-remessa.store',
-            'edit'    => 'tipos-relacao-remessa.edit',
-            'update'  => 'tipos-relacao-remessa.update',
-            'destroy' => 'tipos-relacao-remessa.destroy',
-        ]);
+        Route::get('relatorios-plataforma', [RelatorioController::class, 'plataforma'])->name('relatorios.plataforma');
 
         // RNDS
         Route::get('rnds',  [\App\Http\Controllers\RndsController::class, 'index'])->name('rnds.index');

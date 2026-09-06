@@ -50,7 +50,7 @@
         <div class="card p-3 border-start border-danger border-4">
             <div class="text-muted small">Medicamentos</div>
             <div class="fs-3 fw-bold">{{ $totalMedicamentos }}</div>
-            <a href="{{ route('medicamentos.index') }}" class="small text-danger text-decoration-none">Catálogo →</a>
+            <span class="small text-muted">Catálogo de cada farmácia</span>
         </div>
     </div>
 </div>
@@ -85,13 +85,13 @@
         </a>
     </div>
     <div class="col-md-3">
-        <a href="{{ route('medicamentos.index') }}" class="card p-3 text-decoration-none d-flex flex-row align-items-center gap-3 h-100" style="transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(59,130,246,.15)'" onmouseout="this.style.boxShadow=''">
+        <a href="{{ route('relatorios.plataforma') }}" class="card p-3 text-decoration-none d-flex flex-row align-items-center gap-3 h-100" style="transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(59,130,246,.15)'" onmouseout="this.style.boxShadow=''">
             <div style="width:40px;height:40px;background:rgba(239,68,68,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="bi bi-capsule text-danger fs-5"></i>
+                <i class="bi bi-bar-chart-line text-danger fs-5"></i>
             </div>
             <div>
-                <div class="fw-semibold text-dark" style="font-size:.875rem;">Medicamentos</div>
-                <div class="text-muted" style="font-size:.78rem;">Gerenciar catálogo</div>
+                <div class="fw-semibold text-dark" style="font-size:.875rem;">Relatórios</div>
+                <div class="text-muted" style="font-size:.78rem;">Visão geral da plataforma</div>
             </div>
         </a>
     </div>

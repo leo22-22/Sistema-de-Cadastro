@@ -12,6 +12,7 @@ class TipoRelacaoRemessa extends Model
     protected $table = 'tipos_relacao_remessa';
 
     protected $fillable = [
+        'farmacia_id',
         'nome',
         'descricao',
         'ativo',
@@ -27,6 +28,11 @@ class TipoRelacaoRemessa extends Model
     public function processos()
     {
         return $this->hasMany(Processo::class);
+    }
+
+    public function farmacia()
+    {
+        return $this->belongsTo(Farmacia::class);
     }
 
     public function scopeAtivo($query)

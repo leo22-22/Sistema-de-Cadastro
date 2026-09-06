@@ -693,19 +693,8 @@
             <i class="bi bi-people-fill"></i>Usuários
         </a>
 
-        <div class="sb-section">Catálogo</div>
-        <a href="{{ route('medicamentos.index') }}" class="sb-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}">
-            <i class="bi bi-capsule"></i>Medicamentos
-        </a>
-        <a href="{{ route('tipos-receita.index') }}" class="sb-link {{ request()->routeIs('tipos-receita.*') ? 'active' : '' }}">
-            <i class="bi bi-file-medical"></i>Tipos de Receita
-        </a>
-        <a href="{{ route('tipos-relacao-remessa.index') }}" class="sb-link {{ request()->routeIs('tipos-relacao-remessa.*') ? 'active' : '' }}">
-            <i class="bi bi-truck"></i>Tipos de Remessa
-        </a>
-
         <div class="sb-section">Relatórios</div>
-        <a href="{{ route('relatorios.index') }}" class="sb-link {{ request()->routeIs('relatorios.*') ? 'active' : '' }}">
+        <a href="{{ route('relatorios.plataforma') }}" class="sb-link {{ request()->routeIs('relatorios.plataforma') ? 'active' : '' }}">
             <i class="bi bi-bar-chart-line"></i>Relatórios
         </a>
         <a href="{{ route('auditoria.index') }}" class="sb-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
@@ -756,6 +745,19 @@
         <a href="{{ route('lotes.index') }}" class="sb-link {{ request()->routeIs('lotes.*') ? 'active' : '' }}">
             <i class="bi bi-box-seam"></i>Lotes
         </a>
+
+        @if(auth()->user()->isAdminFarmacia())
+        <div class="sb-section">Catálogo</div>
+        <a href="{{ route('medicamentos.index') }}" class="sb-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}">
+            <i class="bi bi-capsule"></i>Medicamentos
+        </a>
+        <a href="{{ route('tipos-receita.index') }}" class="sb-link {{ request()->routeIs('tipos-receita.*') ? 'active' : '' }}">
+            <i class="bi bi-file-medical"></i>Tipos de Receita
+        </a>
+        <a href="{{ route('tipos-relacao-remessa.index') }}" class="sb-link {{ request()->routeIs('tipos-relacao-remessa.*') ? 'active' : '' }}">
+            <i class="bi bi-truck"></i>Tipos de Remessa
+        </a>
+        @endif
 
         <div class="sb-section">Relatórios</div>
         <a href="{{ route('relatorios.index') }}" class="sb-link {{ request()->routeIs('relatorios.*') ? 'active' : '' }}">

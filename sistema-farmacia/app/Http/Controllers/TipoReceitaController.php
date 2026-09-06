@@ -7,19 +7,44 @@ use Illuminate\Http\Request;
 
 class TipoReceitaController extends Controller
 {
+    private function escopoFarmacia($query)
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin()) {
+            $query->where('farmacia_id', $user->farmacia_id);
+        }
+        return $query;
+    }
+
+    private function autorizarGerenciar(): void
+    {
+        abort_unless(auth()->user()->isAdminFarmacia(), 403);
+    }
+
+    private function autorizarTipo(TipoReceita $tipo): void
+    {
+        $user = auth()->user();
+        if (!$user->isSuperadmin()) {
+            abort_if($tipo->farmacia_id !== $user->farmacia_id, 403);
+        }
+    }
+
     public function index()
     {
-        $tipos = TipoReceita::orderBy('nome')->paginate(15);
+        $tipos = $this->escopoFarmacia(TipoReceita::query())->orderBy('nome')->paginate(15);
         return view('tipos-receita.index', compact('tipos'));
     }
 
     public function create()
     {
+        $this->autorizarGerenciar();
         return view('tipos-receita.create');
     }
 
     public function store(Request $request)
     {
+        $this->autorizarGerenciar();
+
         $data = $request->validate([
             'nome'             => ['nullable', 'string', 'max:255'],
             'descricao'        => ['nullable', 'string'],
@@ -28,6 +53,7 @@ class TipoReceitaController extends Controller
         ]);
 
         TipoReceita::create(array_merge($data, [
+            'farmacia_id'     => auth()->user()->farmacia_id,
             'requer_retencao' => $request->boolean('requer_retencao'),
         ]));
 
@@ -36,11 +62,16 @@ class TipoReceitaController extends Controller
 
     public function edit(TipoReceita $tipos_receita)
     {
+        $this->autorizarGerenciar();
+        $this->autorizarTipo($tipos_receita);
         return view('tipos-receita.edit', ['tipo' => $tipos_receita]);
     }
 
     public function update(Request $request, TipoReceita $tipos_receita)
     {
+        $this->autorizarGerenciar();
+        $this->autorizarTipo($tipos_receita);
+
         $data = $request->validate([
             'nome'            => ['nullable', 'string', 'max:255'],
             'descricao'       => ['nullable', 'string'],
@@ -59,6 +90,9 @@ class TipoReceitaController extends Controller
 
     public function destroy(TipoReceita $tipos_receita)
     {
+        $this->autorizarGerenciar();
+        $this->autorizarTipo($tipos_receita);
+
         if ($tipos_receita->processos()->exists()) {
             return back()->with('error', 'Não é possível excluir um tipo de receita vinculado a processos.');
         }

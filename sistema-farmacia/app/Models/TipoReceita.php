@@ -12,6 +12,7 @@ class TipoReceita extends Model
     protected $table = 'tipos_receita';
 
     protected $fillable = [
+        'farmacia_id',
         'nome',
         'descricao',
         'cor',
@@ -30,6 +31,11 @@ class TipoReceita extends Model
     public function processos()
     {
         return $this->hasMany(Processo::class);
+    }
+
+    public function farmacia()
+    {
+        return $this->belongsTo(Farmacia::class);
     }
 
     public function scopeAtivo($query)

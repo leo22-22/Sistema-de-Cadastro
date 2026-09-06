@@ -15,6 +15,7 @@ use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ProcessoController extends Controller
 {
@@ -60,12 +61,13 @@ class ProcessoController extends Controller
 
     public function create()
     {
+        $farmaciaId     = auth()->user()->farmacia_id;
         $pacientes      = Paciente::ativo()->orderBy('nome')->get();
         $cids           = Cid10::ativo()->orderBy('codigo')->get();
         $medicos        = MedicoPrescritor::ativo()->orderBy('nome')->get();
-        $tiposReceita   = TipoReceita::ativo()->orderBy('nome')->get();
-        $tiposRemessa   = TipoRelacaoRemessa::ativo()->orderBy('nome')->get();
-        $medicamentos   = Medicamento::ativo()->orderBy('nome')->with('tipoReceita')->get();
+        $tiposReceita   = TipoReceita::ativo()->where('farmacia_id', $farmaciaId)->orderBy('nome')->get();
+        $tiposRemessa   = TipoRelacaoRemessa::ativo()->where('farmacia_id', $farmaciaId)->orderBy('nome')->get();
+        $medicamentos   = Medicamento::ativo()->where('farmacia_id', $farmaciaId)->orderBy('nome')->with('tipoReceita')->get();
         $tiposProcesso  = Processo::$tiposProcesso;
 
         return view('processos.create', compact(
@@ -76,13 +78,15 @@ class ProcessoController extends Controller
 
     public function store(Request $request)
     {
+        $farmaciaId = auth()->user()->farmacia_id;
+
         $request->validate([
             'tipo_processo'            => ['nullable', 'in:abertura,retratado,transferencia,renovacao,continuidade'],
             'paciente_id'              => ['nullable', 'exists:pacientes,id'],
             'cid10_id'                 => ['nullable', 'exists:cid10,id'],
             'medico_prescritor_id'     => ['nullable', 'exists:medicos_prescritores,id'],
-            'tipo_receita_id'          => ['nullable', 'exists:tipos_receita,id'],
-            'tipo_relacao_remessa_id'  => ['nullable', 'exists:tipos_relacao_remessa,id'],
+            'tipo_receita_id'          => ['nullable', Rule::exists('tipos_receita', 'id')->where('farmacia_id', $farmaciaId)],
+            'tipo_relacao_remessa_id'  => ['nullable', Rule::exists('tipos_relacao_remessa', 'id')->where('farmacia_id', $farmaciaId)],
             'numero_receita'           => ['nullable', 'string', 'max:100'],
             'data_receita'             => ['nullable', 'date'],
             'data_validade_receita'    => ['nullable', 'date', 'after_or_equal:data_receita'],
@@ -92,7 +96,7 @@ class ProcessoController extends Controller
             'exame_entregue'           => ['boolean'],
             'documentos_entregues'     => ['boolean'],
             'medicamentos'             => ['nullable', 'array'],
-            'medicamentos.*.id'           => ['required', 'exists:medicamentos,id'],
+            'medicamentos.*.id'           => ['required', Rule::exists('medicamentos', 'id')->where('farmacia_id', $farmaciaId)],
             'medicamentos.*.periodicidade'=> ['nullable', 'in:mensal,bimestral,trimestral'],
             'medicamentos.*.quantidade_diaria' => ['nullable', 'numeric', 'min:0.1'],
             'medicamentos.*.quantidade_mensal' => ['nullable', 'integer', 'min:1'],
@@ -168,12 +172,13 @@ class ProcessoController extends Controller
         }
 
         $processo->load('medicamentos');
+        $farmaciaId    = auth()->user()->farmacia_id;
         $pacientes     = Paciente::ativo()->orderBy('nome')->get();
         $cids          = Cid10::ativo()->orderBy('codigo')->get();
         $medicos       = MedicoPrescritor::ativo()->orderBy('nome')->get();
-        $tiposReceita  = TipoReceita::ativo()->orderBy('nome')->get();
-        $tiposRemessa  = TipoRelacaoRemessa::ativo()->orderBy('nome')->get();
-        $medicamentos  = Medicamento::ativo()->orderBy('nome')->with('tipoReceita')->get();
+        $tiposReceita  = TipoReceita::ativo()->where('farmacia_id', $farmaciaId)->orderBy('nome')->get();
+        $tiposRemessa  = TipoRelacaoRemessa::ativo()->where('farmacia_id', $farmaciaId)->orderBy('nome')->get();
+        $medicamentos  = Medicamento::ativo()->where('farmacia_id', $farmaciaId)->orderBy('nome')->with('tipoReceita')->get();
         $tiposProcesso = Processo::$tiposProcesso;
 
         return view('processos.edit', compact(
@@ -190,13 +195,15 @@ class ProcessoController extends Controller
             return back()->with('error', 'Processos cancelados não podem ser editados.');
         }
 
+        $farmaciaId = auth()->user()->farmacia_id;
+
         $request->validate([
             'tipo_processo'            => ['nullable', 'in:abertura,retratado,transferencia,renovacao,continuidade'],
             'paciente_id'              => ['nullable', 'exists:pacientes,id'],
             'cid10_id'                 => ['nullable', 'exists:cid10,id'],
             'medico_prescritor_id'     => ['nullable', 'exists:medicos_prescritores,id'],
-            'tipo_receita_id'          => ['nullable', 'exists:tipos_receita,id'],
-            'tipo_relacao_remessa_id'  => ['nullable', 'exists:tipos_relacao_remessa,id'],
+            'tipo_receita_id'          => ['nullable', Rule::exists('tipos_receita', 'id')->where('farmacia_id', $farmaciaId)],
+            'tipo_relacao_remessa_id'  => ['nullable', Rule::exists('tipos_relacao_remessa', 'id')->where('farmacia_id', $farmaciaId)],
             'numero_receita'           => ['nullable', 'string', 'max:100'],
             'data_receita'             => ['nullable', 'date'],
             'data_validade_receita'    => ['nullable', 'date', 'after_or_equal:data_receita'],
@@ -207,7 +214,7 @@ class ProcessoController extends Controller
             'exame_entregue'           => ['boolean'],
             'documentos_entregues'     => ['boolean'],
             'medicamentos'             => ['nullable', 'array'],
-            'medicamentos.*.id'           => ['required', 'exists:medicamentos,id'],
+            'medicamentos.*.id'           => ['required', Rule::exists('medicamentos', 'id')->where('farmacia_id', $farmaciaId)],
             'medicamentos.*.periodicidade'=> ['nullable', 'in:mensal,bimestral,trimestral'],
             'medicamentos.*.quantidade_diaria' => ['nullable', 'numeric', 'min:0.1'],
             'medicamentos.*.quantidade_mensal' => ['nullable', 'integer', 'min:1'],

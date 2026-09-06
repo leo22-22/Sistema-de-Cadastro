@@ -11,7 +11,7 @@ class Medicamento extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'nome', 'principio_ativo', 'dosagem', 'forma_farmaceutica',
+        'farmacia_id', 'nome', 'principio_ativo', 'dosagem', 'forma_farmaceutica',
         'periodicidade', 'quantidade_diaria', 'tipo_receita_id',
         'descricao', 'ativo',
     ];
@@ -49,6 +49,11 @@ class Medicamento extends Model
     public function tipoReceita()
     {
         return $this->belongsTo(TipoReceita::class);
+    }
+
+    public function farmacia()
+    {
+        return $this->belongsTo(Farmacia::class);
     }
 
     public function cids()

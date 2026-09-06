@@ -1,9 +1,11 @@
 <x-app-layout>
 <div class="page-header d-flex justify-content-between align-items-center">
     <h4><i class="bi bi-capsule me-2"></i>Medicamentos</h4>
+    @if(auth()->user()->isAdminFarmacia())
     <a href="{{ route('medicamentos.create') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg me-1"></i>Novo Medicamento
     </a>
+    @endif
 </div>
 
 <div class="card mb-3 p-3">
@@ -32,7 +34,9 @@
                     <th>Periodicidade</th>
                     <th>Tipo Receita</th>
                     <th class="text-center">Status</th>
+                    @if(auth()->user()->isAdminFarmacia())
                     <th class="pe-3 text-end">Ações</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -57,6 +61,7 @@
                             {{ $med->ativo ? 'Ativo' : 'Inativo' }}
                         </span>
                     </td>
+                    @if(auth()->user()->isAdminFarmacia())
                     <td class="pe-3 text-end">
                         <a href="{{ route('medicamentos.edit', $med) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
                             <i class="bi bi-pencil"></i>
@@ -67,6 +72,7 @@
                             <button class="btn btn-sm btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></button>
                         </form>
                     </td>
+                    @endif
                 </tr>
                 @empty
                 <tr><td colspan="8" class="text-center text-muted py-4">Nenhum medicamento encontrado.</td></tr>

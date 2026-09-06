@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Farmacia;
 use App\Models\Lote;
+use App\Models\Medicamento;
 use App\Models\Recibo;
 use App\Models\Processo;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -22,6 +25,47 @@ class RelatorioController extends Controller
     public function index()
     {
         return view('relatorios.index');
+    }
+
+    /* ── Visão da plataforma (superadmin) ──────────────────── */
+
+    public function plataforma()
+    {
+        abort_unless(auth()->user()->isSuperadmin(), 403);
+
+        $totalFarmacias    = Farmacia::count();
+        $farmaciasAtivas   = Farmacia::where('ativo', true)->count();
+        $farmaciasInativas = $totalFarmacias - $farmaciasAtivas;
+        $totalUsuarios     = User::where('role', '!=', 'superadmin')->count();
+        $totalProcessos    = Processo::count();
+        $totalRecibos      = Recibo::count();
+        $totalMedicamentos = Medicamento::whereNotNull('farmacia_id')->count();
+
+        // Farmácias cadastradas por mês, últimos 12 meses (agrupamento em PHP —
+        // portável entre MySQL/Postgres, sem funções de data específicas do driver)
+        $inicio = now()->startOfMonth()->subMonths(11);
+        $datasCadastro = Farmacia::where('created_at', '>=', $inicio)->pluck('created_at');
+
+        $crescimentoMensal = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $mes = now()->subMonths($i);
+            $chave = $mes->format('Y-m');
+            $crescimentoMensal[$chave] = [
+                'label' => $mes->translatedFormat('M/y'),
+                'total' => $datasCadastro->filter(fn($d) => $d->format('Y-m') === $chave)->count(),
+            ];
+        }
+
+        $farmaciasTop = Farmacia::withCount(['users', 'processos'])
+            ->orderByDesc('processos_count')
+            ->take(10)
+            ->get();
+
+        return view('relatorios.plataforma', compact(
+            'totalFarmacias', 'farmaciasAtivas', 'farmaciasInativas',
+            'totalUsuarios', 'totalProcessos', 'totalRecibos', 'totalMedicamentos',
+            'crescimentoMensal', 'farmaciasTop'
+        ));
     }
 
     /* ── Dispensações ────────────────────────────────────────── */
@@ -61,7 +105,7 @@ class RelatorioController extends Controller
             return $this->pdfDispensacoes($recibos, $total, $filtros);
         }
 
-        $medicamentos = \App\Models\Medicamento::ativo()->orderBy('nome')->get();
+        $medicamentos = \App\Models\Medicamento::ativo()->where('farmacia_id', $user->farmacia_id)->orderBy('nome')->get();
         return view('relatorios.dispensacoes', compact('recibos', 'total', 'filtros', 'medicamentos'));
     }
 

@@ -6,6 +6,7 @@ use App\Mail\CredenciaisFarmaciaMail;
 use App\Models\Farmacia;
 use App\Models\User;
 use App\Services\AuditoriaService;
+use App\Services\CatalogoFarmaciaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -58,6 +59,8 @@ class FarmaciaController extends Controller
                 'active'     => true,
                 'farmacia_id'=> $farmacia->id,
             ]);
+
+            CatalogoFarmaciaService::seedParaFarmacia($farmacia->id);
 
             return [$farmacia, $usuario];
         });

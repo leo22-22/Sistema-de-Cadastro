@@ -8,6 +8,7 @@ use App\Models\Medicamento;
 use App\Models\TipoReceita;
 use App\Models\TipoRelacaoRemessa;
 use App\Models\User;
+use App\Services\CatalogoFarmaciaService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,14 +16,17 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->seedUsuarios();
+        $farmaciaExemplo = $this->seedUsuarios();
         $this->seedTiposReceita();
         $this->seedTiposRelacaoRemessa();
         $this->seedCid10();
         $this->seedMedicamentos();
+
+        // Copia o catálogo padrão (templates farmacia_id NULL) para a farmácia de exemplo
+        CatalogoFarmaciaService::seedParaFarmacia($farmaciaExemplo->id);
     }
 
-    private function seedUsuarios(): void
+    private function seedUsuarios(): Farmacia
     {
         // Superadmin da plataforma (sem farmácia vinculada)
         User::firstOrCreate(['email' => 'leonardoranuci17@gmail.com'], [
@@ -60,28 +64,41 @@ class DatabaseSeeder extends Seeder
             'active'      => true,
             'farmacia_id' => $farmaciaExemplo->id,
         ]);
+
+        return $farmaciaExemplo;
     }
 
     private function seedTiposReceita(): void
     {
-        TipoReceita::insertOrIgnore([
-            ['nome' => 'Receita Branca Simples',          'cor' => 'secondary', 'requer_retencao' => false, 'descricao' => 'Medicamentos sem controle especial.',                         'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Receita Azul (Psicotrópicos)',     'cor' => 'primary',   'requer_retencao' => true,  'descricao' => 'Psicotrópicos — retenção obrigatória (RDC 344/98).',          'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Receita Amarela (Anabolizantes)',  'cor' => 'warning',   'requer_retencao' => true,  'descricao' => 'Anabolizantes — retenção obrigatória.',                        'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Notificação A (Entorpecentes)',    'cor' => 'danger',    'requer_retencao' => true,  'descricao' => 'Entorpecentes — retenção e notificação obrigatórias.',         'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Receita de Uso Contínuo (RUC)',    'cor' => 'success',   'requer_retencao' => false, 'descricao' => 'Uso contínuo — válida por 6 meses, 3 dispensações.',          'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        // firstOrCreate (não insertOrIgnore): "nome" não tem unique constraint no
+        // banco, então insertOrIgnore duplicaria essas linhas a cada novo deploy
+        // (docker-entrypoint.sh roda db:seed --force em todo restart do container).
+        $tipos = [
+            ['nome' => 'Receita Branca Simples',          'cor' => 'secondary', 'requer_retencao' => false, 'descricao' => 'Medicamentos sem controle especial.'],
+            ['nome' => 'Receita Azul (Psicotrópicos)',     'cor' => 'primary',   'requer_retencao' => true,  'descricao' => 'Psicotrópicos — retenção obrigatória (RDC 344/98).'],
+            ['nome' => 'Receita Amarela (Anabolizantes)',  'cor' => 'warning',   'requer_retencao' => true,  'descricao' => 'Anabolizantes — retenção obrigatória.'],
+            ['nome' => 'Notificação A (Entorpecentes)',    'cor' => 'danger',    'requer_retencao' => true,  'descricao' => 'Entorpecentes — retenção e notificação obrigatórias.'],
+            ['nome' => 'Receita de Uso Contínuo (RUC)',    'cor' => 'success',   'requer_retencao' => false, 'descricao' => 'Uso contínuo — válida por 6 meses, 3 dispensações.'],
+        ];
+
+        foreach ($tipos as $t) {
+            TipoReceita::firstOrCreate(['nome' => $t['nome'], 'farmacia_id' => null], [...$t, 'ativo' => true]);
+        }
     }
 
     private function seedTiposRelacaoRemessa(): void
     {
-        TipoRelacaoRemessa::insertOrIgnore([
-            ['nome' => 'Entrada de Processo',          'descricao' => 'Recebimento e abertura de novo processo de paciente.',             'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Envio para Central',           'descricao' => 'Envio dos processos recebidos para a central estadual.',           'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Devolução de Medicamentos',    'descricao' => 'Devolução de medicamentos não retirados pelo paciente.',           'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Lista — Não Retirou',          'descricao' => 'Relação de pacientes que não retiraram a medicação do mês.',       'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['nome' => 'Lista — Retirou (Pedido)',     'descricao' => 'Relação de pacientes que retiraram — base para pedido mensal.',    'ativo' => true, 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        $tipos = [
+            ['nome' => 'Entrada de Processo',          'descricao' => 'Recebimento e abertura de novo processo de paciente.'],
+            ['nome' => 'Envio para Central',           'descricao' => 'Envio dos processos recebidos para a central estadual.'],
+            ['nome' => 'Devolução de Medicamentos',    'descricao' => 'Devolução de medicamentos não retirados pelo paciente.'],
+            ['nome' => 'Lista — Não Retirou',          'descricao' => 'Relação de pacientes que não retiraram a medicação do mês.'],
+            ['nome' => 'Lista — Retirou (Pedido)',     'descricao' => 'Relação de pacientes que retiraram — base para pedido mensal.'],
+        ];
+
+        foreach ($tipos as $t) {
+            TipoRelacaoRemessa::firstOrCreate(['nome' => $t['nome'], 'farmacia_id' => null], [...$t, 'ativo' => true]);
+        }
     }
 
     private function seedCid10(): void
@@ -231,7 +248,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($medicamentos as $m) {
-            Medicamento::firstOrCreate(['nome' => $m['nome']], [...$m, 'ativo' => true]);
+            Medicamento::firstOrCreate(['nome' => $m['nome'], 'farmacia_id' => null], [...$m, 'ativo' => true]);
         }
     }
 }
