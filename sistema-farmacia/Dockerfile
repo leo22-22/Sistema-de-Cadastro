@@ -3,9 +3,9 @@ FROM php:8.2-apache
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev \
     libxml2-dev libzip-dev nodejs npm \
-    libfreetype6-dev libjpeg62-turbo-dev \
+    libfreetype6-dev libjpeg62-turbo-dev libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath zip gd
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring exif pcntl bcmath zip gd
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
